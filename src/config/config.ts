@@ -16,6 +16,7 @@ const envsSchema = Joi.object()
       .required(),
     PORT: Joi.number().default(8080),
     API_KEY_TOKEN: Joi.string().required(),
+    MONGODB_URI: Joi.string().required(),
   })
   .unknown(true);
 
@@ -35,4 +36,5 @@ export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   xApiKey: envVars.API_KEY_TOKEN,
+  mongoUrl: envVars.MONGODB_URI,
 };
