@@ -35,9 +35,11 @@
   "license": "ISC",
   "dependencies": {
     "@types/express": "^4.17.13",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^29.5.11",
+    "@types/mocha": "^10.0.6",
     "@types/morgan": "^1.9.3",
     "apicache": "^1.6.3",
+    "axios": "^1.6.4",
     "dotenv": "^14.3.2",
     "express": "^4.17.1",
     "express-http-context": "^1.2.4",
@@ -49,12 +51,13 @@
     "md5": "^2.3.0",
     "mongoose": "^7.0.5",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
     "node-mocks-http": "^1.11.0",
     "path": "^0.12.7",
     "runtime-node-refresh": "^1.0.6",
     "supertest": "^6.1.6",
     "swagger-ui-express": "^4.3.0",
-    "ts-jest": "^27.1.1",
+    "ts-jest": "^29.1.1",
     "typescript": "^4.5.2",
     "uuid": "^9.0.0",
     "winston": "^3.6.0"
@@ -74,7 +77,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-security": "^1.4.0",
     "prettier": "^2.5.1",
-    "ts-node-dev": "^1.1.8",
+    "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.5.0",
     "tsconfig-paths": "^3.12.0"
   }

@@ -3,8 +3,9 @@ FROM node:16-alpine
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json files first
+# Copy package.json files first
 COPY package*.json ./
+COPY yarn.lock ./
 
 # Install dependencies
 RUN npm install
