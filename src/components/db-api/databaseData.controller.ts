@@ -9,7 +9,7 @@ export const getAllDatabases = async (req: Request, res: Response) => {
   try {
     console.log('url', `${API_BASE_URL}/databases`);
     const response = await axios.get(`${API_BASE_URL}/databases`);
-    res.status(httpStatus.OK).send(response.data);
+    res.status(httpStatus.OK).send({ data: response.data.databases });
   } catch (error) {
     console.error('Error fetching databases:', error);
     res
@@ -21,7 +21,7 @@ export const getAllDatabases = async (req: Request, res: Response) => {
 export const getAllSchemas = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/schemas`);
-    res.status(httpStatus.OK).send(response.data);
+    res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching schemas:', error);
     res
@@ -33,7 +33,7 @@ export const getAllSchemas = async (req: Request, res: Response) => {
 export const getAllTables = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/tables`);
-    res.status(httpStatus.OK).send(response.data);
+    res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching tables:', error);
     res
@@ -50,7 +50,7 @@ export const getTableColumns = async (req: Request, res: Response) => {
         schemaName,
       )}/${encodeURIComponent(tableName)}/columns`,
     );
-    res.status(httpStatus.OK).send(response.data);
+    res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching table columns:', error);
     res

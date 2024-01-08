@@ -1,4 +1,3 @@
-
 {
   "swagger": "2.0",
   "info": {
@@ -11,29 +10,16 @@
     }
   },
   "basePath": "/",
-  "schemes": [
-    "http",
-    "https"
-  ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "schemes": ["http", "https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/api/health": {
       "get": {
-        "tags": [
-          "healthcheck"
-        ],
+        "tags": ["healthcheck"],
         "summary": "Application service health check 💗",
-        "produces": [
-          "application/json"
-        ],
-        "consumes": [
-          "application/json"
-        ],
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
         "responses": {
           "200": {
             "description": "OK"
@@ -43,15 +29,13 @@
     },
     "/api/user": {
       "post": {
-        "tags": [
-          "create user"
-        ],
+        "tags": ["create user"],
         "description": "Create user",
         "parameters": [
           {
             "name": "x-api-key",
             "in": "header",
-            "default": "Provide API-key (ie. API_KEY_TOKEN from .env.locals file)",
+            "default": "Provide API-key (ie. API_KEY_TOKEN from .localhost.env file)",
             "schema": {
               "type": "string"
             }
@@ -65,9 +49,7 @@
             }
           }
         ],
-        "produces": [
-          "application/json"
-        ],
+        "produces": ["application/json"],
         "responses": {
           "200": {
             "description": "User has been created",
@@ -98,9 +80,7 @@
   },
   "definitions": {
     "Input": {
-      "required": [
-        "input"
-      ],
+      "required": ["input"],
       "properties": {
         "input": {
           "type": "object",
@@ -109,10 +89,7 @@
       }
     },
     "UserInput": {
-      "required": [
-        "name",
-        "email"
-      ],
+      "required": ["name", "email"],
       "properties": {
         "name": {
           "type": "string",

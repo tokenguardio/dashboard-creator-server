@@ -10,7 +10,7 @@ services:
       - '9229:9229'
     depends_on:
       - db
-    env_file: .env.local
+    env_file: .localhost.env
     volumes:
       - './src:/app/src'
       - './scripts/db:/app/scripts/db'

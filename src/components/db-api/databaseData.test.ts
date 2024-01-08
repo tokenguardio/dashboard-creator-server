@@ -8,7 +8,8 @@ describe('Database Data API', () => {
     test('should return 200 status and a list of databases', async () => {
       const res = await request(app).get('/api/databases').send();
       expect(res.status).toBe(httpStatus.OK);
-      expect(Array.isArray(res.body)).toBeTruthy(); // Assuming it returns an array
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBeTruthy();
     });
   });
 
@@ -16,7 +17,8 @@ describe('Database Data API', () => {
     test('should return 200 status and a list of schemas', async () => {
       const res = await request(app).get('/api/schemas').send();
       expect(res.status).toBe(httpStatus.OK);
-      expect(Array.isArray(res.body)).toBeTruthy(); // Assuming it returns an array
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBeTruthy();
     });
   });
 
@@ -24,19 +26,21 @@ describe('Database Data API', () => {
     test('should return 200 status and a list of tables', async () => {
       const res = await request(app).get('/api/tables').send();
       expect(res.status).toBe(httpStatus.OK);
-      expect(Array.isArray(res.body)).toBeTruthy(); // Assuming it returns an array
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBeTruthy();
     });
   });
 
   describe('GET /api/tables/:schemaName/:tableName/columns', () => {
     test('should return 200 status and a list of columns for a specific table', async () => {
-      const schemaName = 'public'; // Replace with an actual schema name
-      const tableName = 'your_table_name'; // Replace with an actual table name
+      const schemaName = 'public';
+      const tableName = 'your_table_name';
       const res = await request(app)
         .get(`/api/tables/${schemaName}/${tableName}/columns`)
         .send();
       expect(res.status).toBe(httpStatus.OK);
-      expect(Array.isArray(res.body)).toBeTruthy(); // Assuming it returns an array
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBeTruthy();
     });
   });
 });

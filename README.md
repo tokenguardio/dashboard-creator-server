@@ -54,8 +54,8 @@ Please scroll down to "How to work with NET.ts" section.
 
 If you want to run NET.ts "standard way" using the `npm` instead of `docker-compose`.
 You are free to do it just keep in mind that I develop the NET.ts project on node version 16.
-Note: you need to set env variables defined in `.env.local` file.
-On mac OS you can use `export $(cat .env.local)` to export all env variables from the .env.local file.
+Note: you need to set env variables defined in `.localhost.env` file.
+On mac OS you can use `export $(cat .localhost.env)` to export all env variables from the .localhost.env file.
 
 Install dependencies:
 
@@ -73,7 +73,7 @@ npm run server:dev
 
 There are few rules that you have to obey to enjoy NET.ts fully.
 
-1. Enviromment variables - define your envs in `.env.local` file and provide validation rules for them inside `@config/config.ts` file.
+1. Enviromment variables - define your envs in `.localhost.env` file and provide validation rules for them inside `@config/config.ts` file.
 2. Structure your solution by components. There is an example [user](https://github.com/przemek-nowicki/node-express-template.ts/tree/master/src/components/user) CRUD component that shows how you may build logic for your own componnents.
 3. Define your routung inside `api.ts` fiile.
 4. Describe your newly created API inside `swagger.json` file
