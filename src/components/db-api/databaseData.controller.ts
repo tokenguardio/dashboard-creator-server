@@ -50,11 +50,71 @@ export const getTableColumns = async (req: Request, res: Response) => {
         schemaName,
       )}/${encodeURIComponent(tableName)}/columns`,
     );
-    res.status(httpStatus.OK).send({ data: response.data });
+
+    const processedColumns = response.data.map((column) => {
+      // Assuming column data_type or a similar field is part of the response
+      const dataType = column.data_type.toLowerCase();
+      const isStringDateOrTimestamp = [
+        'character varying',
+        'varchar',
+        'text',
+        'date',
+        'timestamp',
+        'timestamp with time zone',
+        'timestamp without time zone',
+      ].includes(dataType);
+      const isNumeric = [
+        'integer',
+        'bigint',
+        'numeric',
+        'real',
+        'double precision',
+        'smallint',
+        'decimal',
+      ].includes(dataType);
+
+      return {
+        ...column,
+        isMeasure: isNumeric,
+        isDimension: isStringDateOrTimestamp,
+      };
+    });
+
+    res.status(200).send({ data: processedColumns });
   } catch (error) {
     console.error('Error fetching table columns:', error);
+    res.status(500).send({ message: 'Error fetching table columns' });
+  }
+};
+
+export const generateChartData = async (req: Request, res: Response) => {
+  try {
+    const { schema, table } = req.params;
+    const { dimension, measures, differential, filters } = req.body;
+
+    const parsedMeasures = measures ? JSON.parse(measures) : [];
+    const parsedFilters = filters ? JSON.parse(filters) : [];
+
+    const payload = {
+      groupByColumns: [{ columnName: dimension }],
+      aggregateColumns: parsedMeasures,
+      filters: parsedFilters,
+    };
+
+    if (differential) {
+      payload.groupByColumns.push({ columnName: differential });
+    }
+
+    const url = `${API_BASE_URL}/group-by-operation/${schema}/${table}`;
+
+    console.log('url', url);
+    const response = await axios.post(url, payload);
+
+    res.status(httpStatus.OK).send({ data: response.data });
+  } catch (error) {
+    console.error('Error generating chart data:', error);
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
-      .send({ message: 'Error fetching table columns' });
+      .send({ message: 'Error generating chart data' });
   }
 };
