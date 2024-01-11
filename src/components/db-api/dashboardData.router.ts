@@ -9,10 +9,13 @@ import {
 
 const router: Router = Router();
 
-router.get('/databases', getAllDatabases);
-router.get('/schemas', getAllSchemas);
-router.get('/tables', getAllTables);
-router.get('/tables/:schemaName/:tableName/columns', getTableColumns);
-router.post('/generate-chart-data', generateChartData);
+router.get('/database-data/databases', getAllDatabases);
+router.get('/database-data/schemas', getAllSchemas);
+router.get('/database-data/tables', getAllTables);
+router.get(
+  '/database-data/tables/:schemaName/:tableName/columns',
+  getTableColumns,
+);
+router.post('/database-data/generate-chart-data', generateChartData);
 
 export default router;
