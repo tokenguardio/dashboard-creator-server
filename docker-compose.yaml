@@ -27,6 +27,17 @@ services:
     networks:
       - node-network
 
+  client: 
+    build:
+      context: ../dashboard-creator-client
+      dockerfile: Dockerfile
+    ports:
+      - '5173:5173' 
+    volumes:
+      - '../dashboard-creator-client:/usr/src/app/src' 
+    networks:
+      - node-network
+
 volumes:
   dbdata:
 
