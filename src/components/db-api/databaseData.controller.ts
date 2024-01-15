@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
-
-import fs from 'fs';
-import path from 'path';
+import * as chartDataGenerator from './helper/chartDataGenerator';
 
 /* TO DO: move it do .env, create docker compose including db-api */
 const API_BASE_URL = 'http://host.docker.internal:3000';
@@ -97,55 +95,24 @@ export const generateChartData = async (req: Request, res: Response) => {
     const parsedMeasures = measures ? JSON.parse(measures) : [];
     const parsedFilters = filters ? JSON.parse(filters) : [];
 
-    const payload = {
-      groupByColumns: [{ columnName: dimension }],
-      aggregateColumns: parsedMeasures,
-      filters: parsedFilters,
-    };
-
-    if (differential) {
-      payload.groupByColumns.push({ columnName: differential });
-    }
+    const payload = chartDataGenerator.createChartDataPayload({
+      dimension,
+      parsedMeasures,
+      differential,
+      parsedFilters,
+    });
 
     const url = `${API_BASE_URL}/group-by-operation/${schema}/${table}`;
     const response = await axios.post(url, payload);
 
-    const filePath = path.join(__dirname, 'responseData.json');
-    fs.writeFileSync(filePath, JSON.stringify(response.data, null, 2));
-
-    // Process and map the response data
-    const mappedData = response.data.map((row) => {
-      const newRow: {
-        dimension?: string;
-        differential?: string;
-        measure?: any;
-      } = {};
-
-      // Map dimension column
-      newRow.dimension = row[dimension];
-
-      // Map differential column if it exists
-      if (differential) {
-        newRow.differential = row[differential];
-      }
-
-      // Map measures
-      parsedMeasures.forEach((measure) => {
-        newRow[measure.columnName] =
-          row[`${measure.columnName}_${measure.operator}`];
-        console.log(
-          measure,
-          `${measure.columnName}_${measure.operator}`,
-          row[`${measure.columnName}_${measure.operator}`],
-        );
-      });
-
-      return newRow;
-    });
-
-    // Save the mapped data to a JSON file
-    // const filePath = path.join(__dirname, 'chartData.json');
-    // fs.writeFileSync(filePath, JSON.stringify(mappedData, null, 2));
+    const mappedData = chartDataGenerator.formatChartDataResponse(
+      response.data,
+      {
+        dimension,
+        differential,
+        parsedMeasures,
+      },
+    );
 
     res.status(httpStatus.OK).send({ data: mappedData });
   } catch (error) {
