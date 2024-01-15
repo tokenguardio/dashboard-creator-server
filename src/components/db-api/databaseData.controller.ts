@@ -2,14 +2,16 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
 
+import fs from 'fs';
+import path from 'path';
+
 /* TO DO: move it do .env, create docker compose including db-api */
 const API_BASE_URL = 'http://host.docker.internal:3000';
 
 export const getAllDatabases = async (req: Request, res: Response) => {
   try {
-    console.log('url', `${API_BASE_URL}/databases`);
     const response = await axios.get(`${API_BASE_URL}/databases`);
-    res.status(httpStatus.OK).send({ data: response.data.databases });
+    res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching databases:', error);
     res
@@ -106,11 +108,46 @@ export const generateChartData = async (req: Request, res: Response) => {
     }
 
     const url = `${API_BASE_URL}/group-by-operation/${schema}/${table}`;
-
-    console.log('url', url);
     const response = await axios.post(url, payload);
 
-    res.status(httpStatus.OK).send({ data: response.data });
+    const filePath = path.join(__dirname, 'responseData.json');
+    fs.writeFileSync(filePath, JSON.stringify(response.data, null, 2));
+
+    // Process and map the response data
+    const mappedData = response.data.map((row) => {
+      const newRow: {
+        dimension?: string;
+        differential?: string;
+        measure?: any;
+      } = {};
+
+      // Map dimension column
+      newRow.dimension = row[dimension];
+
+      // Map differential column if it exists
+      if (differential) {
+        newRow.differential = row[differential];
+      }
+
+      // Map measures
+      parsedMeasures.forEach((measure) => {
+        newRow[measure.columnName] =
+          row[`${measure.columnName}_${measure.operator}`];
+        console.log(
+          measure,
+          `${measure.columnName}_${measure.operator}`,
+          row[`${measure.columnName}_${measure.operator}`],
+        );
+      });
+
+      return newRow;
+    });
+
+    // Save the mapped data to a JSON file
+    // const filePath = path.join(__dirname, 'chartData.json');
+    // fs.writeFileSync(filePath, JSON.stringify(mappedData, null, 2));
+
+    res.status(httpStatus.OK).send({ data: mappedData });
   } catch (error) {
     console.error('Error generating chart data:', error);
     res

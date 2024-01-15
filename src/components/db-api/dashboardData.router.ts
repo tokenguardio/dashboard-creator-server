@@ -16,6 +16,9 @@ router.get(
   '/database-data/tables/:schemaName/:tableName/columns',
   getTableColumns,
 );
-router.post('/database-data/generate-chart-data', generateChartData);
+router.post(
+  '/database-data/generate-chart-data/:schema/:table',
+  generateChartData,
+);
 
 export default router;

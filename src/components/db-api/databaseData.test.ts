@@ -1,85 +1,149 @@
 import { agent as request } from 'supertest';
 import axios from 'axios';
 import httpStatus from 'http-status';
-import mockAxios from 'jest-mock-axios';
 import { jest } from '@jest/globals';
+import mockData from './mocks/DashboardData.json';
+import queryResponses from './mocks/queryResponses.json';
 
 import app from '@app';
 
 jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('Database Data API', () => {
-  afterEach(() => {
-    mockAxios.reset(); // Reset the mock after each test
-  });
   describe('GET /api/databases', () => {
     test('should return 200 status and a list of databases', async () => {
-      const mockedAxios = axios as jest.Mocked<typeof axios>;
-      const mockDatabasesData = { databases: ['db1', 'db2', 'db3'] };
-      mockedAxios.get.mockResolvedValueOnce({ data: mockDatabasesData });
+      mockedAxios.get.mockResolvedValueOnce({ data: mockData.databases });
+      const res = await request(app).get('/api/database-data/databases');
 
-      const res = await request(app).get('/api/databases');
-
-      // Assertions
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data)).toBeTruthy();
-      expect(res.body.data).toEqual(mockDatabasesData.databases);
+      expect(res.body.data).toEqual(mockData.databases);
     });
   });
 
   describe('GET /api/schemas', () => {
     test('should return 200 status and a list of schemas', async () => {
-      const mockedAxios = axios as jest.Mocked<typeof axios>;
-      const mockResponseData = [
-        { schema_name: 'pg_catalog' },
-        { schema_name: 'information_schema' },
-        { schema_name: 'public' },
-        { schema_name: 'growth_index' },
-      ];
-      mockedAxios.get.mockResolvedValueOnce({ data: mockResponseData });
-
+      mockedAxios.get.mockResolvedValueOnce({ data: mockData.schemas });
       const res = await request(app).get('/api/database-data/schemas');
 
-      // Assertions
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
-      expect(res.body.data).toEqual(mockResponseData);
+      expect(res.body.data).toEqual(mockData.schemas);
     });
   });
 
   describe('GET /api/tables', () => {
-    test.only('should return 200 status and a list of tables', async () => {
-      const mockedAxios = axios as jest.Mocked<typeof axios>;
-      const mockTablesData = [
-        { table_schema: 'public', table_name: 'tokens_dict' },
-        { table_schema: 'public', table_name: 'market_data' },
-        { table_schema: 'growth_index', table_name: 'weekly_growth_index_old' },
-        { table_schema: 'public', table_name: 'artemis_raw_data' },
-        { table_schema: 'growth_index', table_name: 'weekly_growth_index' },
-      ];
-      mockedAxios.get.mockResolvedValueOnce({ data: mockTablesData });
-
+    test('should return 200 status and a list of tables', async () => {
+      mockedAxios.get.mockResolvedValueOnce({ data: mockData.tables });
       const res = await request(app).get('/api/database-data/tables');
 
-      // Assertions
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data)).toBeTruthy();
-      expect(res.body.data).toEqual(mockTablesData);
+      expect(res.body.data).toEqual(mockData.tables);
     });
   });
 
-  // describe('GET /api/tables/:schemaName/:tableName/columns', () => {
-  //   test('should return 200 status and a list of columns for a specific table', async () => {
-  //     const schemaName = 'public';
-  //     const tableName = 'your_table_name';
-  //     const res = await request(app)
-  //       .get(`/api/tables/${schemaName}/${tableName}/columns`)
-  //       .send();
-  //     expect(res.status).toBe(httpStatus.OK);
-  //     expect(res.body).toHaveProperty('data');
-  //     expect(Array.isArray(res.body.data)).toBeTruthy();
-  //   });
-  // });
+  describe('GET /api/tables/:schemaName/:tableName/columns', () => {
+    test('should return 200 status and a list of columns for a specific table', async () => {
+      mockedAxios.get.mockResolvedValueOnce({ data: mockData.columns.request });
+      const res = await request(app).get(
+        `/api/database-data/tables/${mockData.schema_name}/${mockData.table_name}/columns`,
+      );
+      expect(res.status).toBe(httpStatus.OK);
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBeTruthy();
+      expect(res.body.data).toEqual(mockData.columns.response);
+    });
+  });
+
+  describe('POST /api/database-data/generate-chart-data', () => {
+    test('should handle request with one measure', async () => {
+      const payload = {
+        dimension: 'timestamp',
+        measures: JSON.stringify([
+          { columnName: 'market_cap', operator: 'SUM' },
+        ]),
+        filters: JSON.stringify([
+          {
+            columnName: 'timestamp',
+            filterValue: {
+              start: '2023-06-28 00:00:00',
+              end: '2023-06-29 00:00:00',
+            },
+          },
+        ]),
+      };
+
+      mockedAxios.post.mockResolvedValueOnce({
+        data: queryResponses.responseForOneMeasure,
+      });
+      const res = await request(app)
+        .post('/api/database-data/generate-chart-data/public/market_data')
+        .send(payload);
+
+      expect(res.status).toBe(httpStatus.OK);
+      // Additional assertions...
+    });
+
+    test('should handle request with two measures', async () => {
+      const payload = {
+        dimension: 'timestamp',
+        measures: JSON.stringify([
+          { columnName: 'price', operator: 'AVG' },
+          { columnName: 'market_cap', operator: 'SUM' },
+        ]),
+        filters: JSON.stringify([
+          {
+            columnName: 'timestamp',
+            filterValue: {
+              start: '2023-06-28 00:00:00',
+              end: '2023-06-29 00:00:00',
+            },
+          },
+        ]),
+      };
+
+      mockedAxios.post.mockResolvedValueOnce({
+        data: queryResponses.responseForTwoMeasures,
+      });
+      const res = await request(app)
+        .post('/api/database-data/generate-chart-data/public/market_data')
+        .send(payload);
+
+      expect(res.status).toBe(httpStatus.OK);
+      // Additional assertions...
+    });
+
+    test('should handle request with differential', async () => {
+      const payload = {
+        dimension: 'timestamp',
+        measures: JSON.stringify([
+          { columnName: 'market_cap', operator: 'SUM' },
+        ]),
+        filters: JSON.stringify([
+          {
+            columnName: 'timestamp',
+            filterValue: {
+              start: '2023-06-28 00:00:00',
+              end: '2023-06-29 00:00:00',
+            },
+          },
+        ]),
+        differential: 'ticker',
+      };
+
+      mockedAxios.post.mockResolvedValueOnce({
+        data: queryResponses.responseForDifferential,
+      });
+      const res = await request(app)
+        .post('/api/database-data/generate-chart-data/public/market_data')
+        .send(payload);
+
+      expect(res.status).toBe(httpStatus.OK);
+      // Additional assertions...
+    });
+  });
 });
