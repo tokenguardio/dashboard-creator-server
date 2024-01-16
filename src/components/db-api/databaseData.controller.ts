@@ -3,8 +3,7 @@ import httpStatus from 'http-status';
 import axios from 'axios';
 import * as chartDataGenerator from './helper/chartDataGenerator';
 
-/* TO DO: move it do .env, create docker compose including db-api */
-const API_BASE_URL = 'http://host.docker.internal:3000';
+const { API_BASE_URL } = process.env;
 
 export const getAllDatabases = async (req: Request, res: Response) => {
   try {

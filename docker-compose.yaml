@@ -38,6 +38,18 @@ services:
     networks:
       - node-network
 
+  db-api:
+    build:
+      context: ../db-api 
+      dockerfile: Dockerfile
+    ports:
+      - '8082:8082'
+    env_file: ../db-api/.env.example 
+    volumes:
+      - '../db-api:/usr/src/node-app' 
+    networks:
+      - node-network
+
 volumes:
   dbdata:
 
