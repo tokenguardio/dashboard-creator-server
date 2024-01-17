@@ -1,0 +1,222 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Dashboard API",
+    "description": "API for managing dashboards",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "basePath": "/",
+  "schemes": ["http", "https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/dashboard/": {
+      "post": {
+        "tags": ["Dashboard"],
+        "summary": "Create a new dashboard",
+        "description": "Endpoint for creating a new dashboard.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "dashboard",
+            "description": "Dashboard data to create",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DashboardInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Dashboard created"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/dashboard/:id": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Read a specific dashboard",
+        "description": "Endpoint for retrieving a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard found",
+            "schema": {
+              "$ref": "#/definitions/Dashboard"
+            }
+          },
+          "404": {
+            "description": "Dashboard not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Dashboard"],
+        "summary": "Update a specific dashboard",
+        "description": "Endpoint for updating a specific dashboard by its ID.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard updated"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Dashboard not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Dashboard"],
+        "summary": "Delete a specific dashboard",
+        "description": "Endpoint for deleting a specific dashboard by its ID.",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Dashboard deleted"
+          },
+          "404": {
+            "description": "Dashboard not found"
+          }
+        }
+      }
+    },
+    "/api/dashboard/all": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get all dashboards",
+        "description": "Endpoint for retrieving all dashboards.",
+        "responses": {
+          "200": {
+            "description": "List of all dashboards",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dashboard"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Dashboard": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DashboardElement"
+          }
+        },
+        "layout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LayoutItem"
+          }
+        },
+        "theme": {
+          "$ref": "#/definitions/Theme"
+        }
+      }
+    },
+    "DashboardInput": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "theme": {
+          "$ref": "#/definitions/Theme"
+        }
+      }
+    },
+    "DashboardElement": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "differential": {
+          "type": "string"
+        },
+        "measures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "LayoutItem": {
+      "type": "object",
+      "required": ["id", "x", "y", "w", "h"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        },
+        "h": {
+          "type": "number"
+        },
+        "static": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Theme": {
+      "type": "object",
+      "properties": {
+        "bgColor": {
+          "type": "string"
+        },
+        "itemGridRadius": {
+          "type": "string"
+        },
+        "itemGridBgColor": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

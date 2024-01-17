@@ -27,7 +27,7 @@ services:
     networks:
       - node-network
 
-  client: 
+  client:
     build:
       context: ../dashboard-creator-client
       dockerfile: Dockerfile
