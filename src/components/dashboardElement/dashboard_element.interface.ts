@@ -1,5 +1,5 @@
 export interface IDashboardElement {
-  id: string;
+  _id: string;
   title: string;
   dimension?: string;
   differential?: string;

@@ -20,11 +20,21 @@ const create = async (dashboardData: IWriteDashboard): Promise<boolean> => {
 };
 
 const read = async (id: string): Promise<IDashboard> => {
-  logger.debug('log id', id);
-  logger.debug(`Fetching dashboard with id ${id}`);
-  const dashboard = await DashboardModel.findOne({ _id: id });
-  logger.debug('log dashboard', dashboard);
-  return dashboard as IDashboard;
+  try {
+    logger.debug('log id', id);
+    logger.debug(`Fetching dashboard with id ${id}`);
+    // Populate the elements field
+    const dashboard = await DashboardModel.findOne({ _id: id }).populate(
+      'elements',
+    );
+    if (!dashboard) {
+      throw new Error(`Dashboard with id ${id} not found`);
+    }
+    return dashboard as IDashboard;
+  } catch (error) {
+    logger.error('Error in fetching dashboard:', error);
+    throw error; // Rethrow the error for further handling
+  }
 };
 
 const getAll = async (): Promise<IDashboard[]> => {
@@ -34,6 +44,7 @@ const getAll = async (): Promise<IDashboard[]> => {
 };
 
 const update = async (dashboard: IWriteDashboard): Promise<boolean> => {
+  console.log('log update', dashboard);
   const updatedDashboard = await DashboardModel.findOneAndUpdate(
     { id: dashboard.id },
     dashboard,
@@ -43,10 +54,14 @@ const update = async (dashboard: IWriteDashboard): Promise<boolean> => {
   return true;
 };
 
-const deleteById = async (id: string): Promise<boolean> => {
+const deleteById = async (id: string): Promise<void> => {
+  const dashboard = await DashboardModel.findOne({ _id: id });
+  if (!dashboard) {
+    throw new Error(`Dashboard with id ${id} does not exist.`);
+  }
+
   await DashboardModel.findOneAndDelete({ _id: id });
   logger.debug(`Dashboard with id ${id} has been removed`);
-  return true;
 };
 
 const addElement = async (
@@ -54,17 +69,23 @@ const addElement = async (
   elementData: IDashboardElement,
 ): Promise<boolean> => {
   try {
+    // Check if the dashboard exists
+    const dashboard = await DashboardModel.findById(dashboardId);
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
     const newElement = await dashboardElementService.createDashboardElement(
       elementData,
     );
-    if (!newElement.id) {
-      throw new Error('Newly created element does not have an ID.');
-    }
+
     await DashboardModel.findByIdAndUpdate(
       dashboardId,
-      { $push: { elements: newElement.id } },
+      // eslint-disable-next-line no-underscore-dangle
+      { $push: { elements: newElement._id } },
       { new: true },
     );
+
     logger.debug(`Element added to dashboard: %O`, newElement);
     return true;
   } catch (err) {
@@ -72,6 +93,7 @@ const addElement = async (
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error adding element to dashboard',
+      err.message,
     );
   }
 };
@@ -81,12 +103,32 @@ const deleteElement = async (
   elementId: string,
 ): Promise<boolean> => {
   try {
+    // Check if the dashboard exists
+    const dashboard = await DashboardModel.findById(dashboardId);
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    // Check if the element is part of the dashboard
+    const elementExists = dashboard.elements.some(
+      // eslint-disable-next-line no-underscore-dangle
+      (element) => element._id.toString() === elementId,
+    );
+    if (!elementExists) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Element not found in dashboard',
+      );
+    }
+
     await dashboardElementService.deleteDashboardElement(elementId);
+
     await DashboardModel.findByIdAndUpdate(
       dashboardId,
       { $pull: { elements: elementId } },
       { new: true },
     );
+
     logger.debug(`Element deleted from dashboard: ${elementId}`);
     return true;
   } catch (err) {
@@ -94,6 +136,7 @@ const deleteElement = async (
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error deleting element from dashboard',
+      err.message,
     );
   }
 };
@@ -103,6 +146,25 @@ const updateElementInDashboard = async (
   elementData: IDashboardElement,
 ): Promise<boolean> => {
   try {
+    // Check if the dashboard exists
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    // Check if the element is part of the dashboard
+    const elementExists = dashboard.elements.some(
+      // eslint-disable-next-line no-underscore-dangle
+      (element) => element._id.toString() === elementData._id,
+    );
+    if (!elementExists) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Element not found in dashboard',
+      );
+    }
+
+    // Update the dashboard element
     await dashboardElementService.updateDashboardElement(elementData);
     // Assuming updateElement updates the element in its own collection
     logger.debug(`Element updated in dashboard: %O`, elementData);
@@ -112,6 +174,7 @@ const updateElementInDashboard = async (
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error updating element in dashboard',
+      err.message,
     );
   }
 };

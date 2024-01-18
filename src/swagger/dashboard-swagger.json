@@ -40,7 +40,7 @@
         }
       }
     },
-    "/api/dashboard/:id": {
+    "/api/dashboard/{id}": {
       "get": {
         "tags": ["Dashboard"],
         "summary": "Read a specific dashboard",
@@ -69,7 +69,24 @@
         "tags": ["Dashboard"],
         "summary": "Update a specific dashboard",
         "description": "Endpoint for updating a specific dashboard by its ID.",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard to update"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Dashboard data to update",
+            "schema": {
+              "$ref": "#/definitions/DashboardInput"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Dashboard updated"
@@ -86,7 +103,15 @@
         "tags": ["Dashboard"],
         "summary": "Delete a specific dashboard",
         "description": "Endpoint for deleting a specific dashboard by its ID.",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard to delete"
+          }
+        ],
         "responses": {
           "202": {
             "description": "Dashboard deleted"
@@ -114,14 +139,122 @@
           }
         }
       }
+    },
+    "/api/dashboard/{dashboardId}/element": {
+      "post": {
+        "tags": ["Dashboard"],
+        "summary": "Add an element to a specific dashboard",
+        "description": "Endpoint for adding an element to a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "elementData",
+            "in": "body",
+            "required": true,
+            "description": "Element data to add",
+            "schema": {
+              "$ref": "#/definitions/DashboardElementInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Element added to Dashboard"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Dashboard not found"
+          }
+        }
+      }
+    },
+    "/api/dashboard/{dashboardId}/element/{elementId}": {
+      "delete": {
+        "tags": ["Dashboard"],
+        "summary": "Remove an element from a specific dashboard",
+        "description": "Endpoint for removing an element from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "elementId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the element to remove"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Element removed from Dashboard"
+          },
+          "404": {
+            "description": "Dashboard or Element not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Dashboard"],
+        "summary": "Update an element in a specific dashboard",
+        "description": "Endpoint for updating an element in a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "elementId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the element to update"
+          },
+          {
+            "name": "elementData",
+            "in": "body",
+            "required": true,
+            "description": "Updated element data",
+            "schema": {
+              "$ref": "#/definitions/DashboardElementInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Element updated in Dashboard"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Dashboard or Element not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
     "Dashboard": {
       "type": "object",
-      "required": ["id", "title"],
+      "required": ["title"],
       "properties": {
-        "id": {
+        "_id": {
           "type": "string"
         },
         "title": {
@@ -156,11 +289,32 @@
         }
       }
     },
+    "DashboardElementInput": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "differential": {
+          "type": "string"
+        },
+        "measures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "DashboardElement": {
       "type": "object",
-      "required": ["id", "title"],
+      "required": ["title"],
       "properties": {
-        "id": {
+        "_id": {
           "type": "string"
         },
         "title": {

@@ -26,23 +26,47 @@ const getDashboardElement = async (id: string): Promise<IDashboardElement> => {
   return element as IDashboardElement;
 };
 
+/* eslint-disable no-underscore-dangle */
 const updateDashboardElement = async (
   elementData: IDashboardElement,
 ): Promise<boolean> => {
   try {
-    const updatedElement = await DashboardElementModel.findOneAndUpdate(
-      { id: elementData.id },
+    // Validate elementData and its _id
+    if (!elementData || !elementData._id) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Invalid element data or missing element ID',
+      );
+    }
+
+    // Check if the element exists
+    const existingElement = await DashboardElementModel.findById(
+      elementData._id,
+    );
+    if (!existingElement) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard element not found');
+    }
+
+    // Update the element
+    const updatedElement = await DashboardElementModel.findByIdAndUpdate(
+      elementData._id,
       elementData,
       { new: true },
     );
+
+    if (!updatedElement) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Error updating the dashboard element',
+      );
+    }
+
     logger.debug(`DashboardElement updated: %O`, updatedElement);
     return true;
   } catch (err) {
     logger.error(`DashboardElement update error: %O`, err.message);
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Dashboard element was not updated!',
-    );
+    // Rethrow the error as it is to preserve the error status and message
+    throw err;
   }
 };
 

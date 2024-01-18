@@ -4,7 +4,6 @@ import {
   ILayoutItem,
   ITheme,
 } from '@components/dashboard/dashboard.interface';
-import { v4 as uuidv4 } from 'uuid';
 
 const layoutSchema = new Schema<ILayoutItem>({
   id: { type: String, required: true, ref: 'DashboardElement' },
@@ -23,7 +22,6 @@ const themeSchema = new Schema<ITheme>({
 });
 
 const dashboardSchema = new Schema<IDashboard & Document>({
-  id: { type: String, default: uuidv4, unique: true },
   title: { type: String, required: true },
   elements: [{ type: Schema.Types.ObjectId, ref: 'DashboardElement' }],
   layout: [layoutSchema],

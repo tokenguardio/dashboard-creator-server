@@ -66,10 +66,9 @@ const deleteDashboard = async (req: Request, res: Response) => {
 
 const addDashboardElement = async (req: Request, res: Response) => {
   try {
-    const { dashboardId, elementData } = req.body as {
-      dashboardId: string;
-      elementData: IDashboardElement;
-    };
+    const { dashboardId } = req.params;
+    const elementData = req.body;
+
     await addElement(dashboardId, elementData);
     res
       .status(httpStatus.CREATED)
@@ -93,10 +92,12 @@ const deleteDashboardElement = async (req: Request, res: Response) => {
 
 const updateDashboardElement = async (req: Request, res: Response) => {
   try {
-    const { dashboardId, elementData } = req.body as {
-      dashboardId: string;
-      elementData: IDashboardElement;
-    };
+    const { dashboardId, elementId } = req.params;
+    const elementData = req.body as IDashboardElement;
+
+    // eslint-disable-next-line no-underscore-dangle
+    elementData._id = elementId;
+
     await updateElementInDashboard(dashboardId, elementData);
     res.status(httpStatus.OK).send({ message: 'Dashboard Element Updated' });
   } catch (err) {
