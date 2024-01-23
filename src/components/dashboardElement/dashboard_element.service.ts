@@ -10,7 +10,7 @@ const createDashboardElement = async (
   try {
     const newElement = await DashboardElementModel.create(elementData);
     logger.debug(`DashboardElement created: %O`, newElement);
-    return newElement; // Return the created element
+    return newElement;
   } catch (err) {
     logger.error(`DashboardElement create error: %O`, err.message);
     throw new AppError(

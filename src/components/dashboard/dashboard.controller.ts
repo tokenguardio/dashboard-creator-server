@@ -15,20 +15,13 @@ import { IDashboardElement } from '@components/dashboardElement/dashboard_elemen
 
 const createDashboard = async (req: Request, res: Response) => {
   try {
-    const dashboard = req.body as IWriteDashboard;
-    await create(dashboard);
-    res.status(httpStatus.CREATED).send({ message: 'Dashboard Created' });
-  } catch (err) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
-  }
-};
+    const dashboardData = req.body as IWriteDashboard;
+    const createdDashboard = await create(dashboardData);
 
-const readDashboard = async (req: Request, res: Response) => {
-  try {
-    const dashboard = await read(req.params.id);
-    res
-      .status(httpStatus.OK)
-      .send({ message: 'Dashboard Read', output: dashboard });
+    res.status(httpStatus.CREATED).send({
+      message: 'Dashboard Created',
+      output: createdDashboard,
+    });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
@@ -45,13 +38,37 @@ const getAllDashboards = async (req: Request, res: Response) => {
   }
 };
 
-const updateDashboard = async (req: Request, res: Response) => {
+const readDashboard = async (req: Request, res: Response) => {
   try {
-    const dashboard = req.body as IWriteDashboard;
-    await update(dashboard);
-    res.status(httpStatus.OK).send({ message: 'Dashboard Updated' });
+    const dashboard = await read(req.params.id);
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Dashboard Read', output: dashboard });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const updateDashboard = async (req: Request, res: Response) => {
+  try {
+    const dashboardId = req.params.id;
+    const dashboardData = req.body as IWriteDashboard;
+
+    const updatedDashboard = await update(dashboardId, dashboardData);
+
+    if (!updatedDashboard) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .send({ message: 'Dashboard not found' });
+    }
+
+    return res
+      .status(httpStatus.OK)
+      .send({ message: 'Dashboard Updated', output: updatedDashboard });
+  } catch (err) {
+    return res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message });
   }
 };
 
@@ -69,10 +86,12 @@ const addDashboardElement = async (req: Request, res: Response) => {
     const { dashboardId } = req.params;
     const elementData = req.body;
 
-    await addElement(dashboardId, elementData);
-    res
-      .status(httpStatus.CREATED)
-      .send({ message: 'Element Added to Dashboard' });
+    const newElement = await addElement(dashboardId, elementData);
+
+    res.status(httpStatus.CREATED).send({
+      message: 'Element Added to Dashboard',
+      output: newElement,
+    });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }

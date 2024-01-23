@@ -9,14 +9,14 @@ import {
 } from '@components/dashboard/dashboard.interface';
 import { IDashboardElement } from '@components/dashboardElement/dashboard_element.interface';
 
-const create = async (dashboardData: IWriteDashboard): Promise<boolean> => {
+const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
   const newDashboard = await DashboardModel.create({
     ...dashboardData,
     elements: [],
     layout: [],
   });
   logger.debug(`Dashboard created: %O`, newDashboard);
-  return true;
+  return newDashboard;
 };
 
 const read = async (id: string): Promise<IDashboard> => {
@@ -43,15 +43,24 @@ const getAll = async (): Promise<IDashboard[]> => {
   return dashboards as IDashboard[];
 };
 
-const update = async (dashboard: IWriteDashboard): Promise<boolean> => {
-  console.log('log update', dashboard);
+const update = async (
+  dashboardId: string,
+  dashboard: IWriteDashboard,
+): Promise<IDashboard> => {
+  logger.debug('log dashboard', dashboard);
   const updatedDashboard = await DashboardModel.findOneAndUpdate(
-    { id: dashboard.id },
+    { _id: dashboardId },
     dashboard,
     { new: true },
   );
+  logger.debug(`log updatedDashboard', ${updatedDashboard}`);
+
+  if (!updatedDashboard) {
+    throw new Error('Dashboard not found');
+  }
+
   logger.debug(`Dashboard updated: %O`, updatedDashboard);
-  return true;
+  return updatedDashboard;
 };
 
 const deleteById = async (id: string): Promise<void> => {
@@ -67,7 +76,7 @@ const deleteById = async (id: string): Promise<void> => {
 const addElement = async (
   dashboardId: string,
   elementData: IDashboardElement,
-): Promise<boolean> => {
+): Promise<IDashboardElement> => {
   try {
     // Check if the dashboard exists
     const dashboard = await DashboardModel.findById(dashboardId);
@@ -81,13 +90,12 @@ const addElement = async (
 
     await DashboardModel.findByIdAndUpdate(
       dashboardId,
-      // eslint-disable-next-line no-underscore-dangle
       { $push: { elements: newElement._id } },
       { new: true },
     );
 
     logger.debug(`Element added to dashboard: %O`, newElement);
-    return true;
+    return newElement; // Return the added element
   } catch (err) {
     logger.error(`Error adding element to dashboard: %O`, err.message);
     throw new AppError(
