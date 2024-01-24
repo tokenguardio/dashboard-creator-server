@@ -30,18 +30,19 @@ services:
   client:
     build:
       context: ../dashboard-creator-client
-      dockerfile: Dockerfile
+      dockerfile: ../dashboard-creator-client/Dockerfile
     ports:
       - '5173:5173' 
     volumes:
-      - '../dashboard-creator-client:/usr/src/app/src' 
+      - '../dashboard-creator-client/src:/usr/src/app/src' 
     networks:
       - node-network
 
   db-api:
     build:
       context: ../db-api 
-      dockerfile: Dockerfile
+      dockerfile: ../db-api/dev.Dockerfile
+    command: npm run watch-node
     ports:
       - '8082:8082'
     env_file: ../db-api/.env.example 
