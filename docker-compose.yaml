@@ -3,7 +3,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dev.Dockerfile
+      dockerfile: ./Dev.Dockerfile
     command: '/app/scripts/docker/local-run.sh'
     ports:
       - '8080:8080'
