@@ -16,9 +16,18 @@ const layoutSchema = new Schema<ILayoutItem>({
 });
 
 const themeSchema = new Schema<ITheme>({
-  bgColor: { type: String, default: '#CBCBCB' },
-  itemGridRadius: { type: String, default: '6px' },
+  name: { type: String, default: 'Custom Theme' },
+  primaryColor: { type: String, default: '#48BD98' },
+  secondaryColor: { type: String, default: '#0A425E' },
+  additionalColor: { type: String, default: '#E6A627' },
+  bgColor: { type: String, default: '#FFFFFF' },
+  itemGridRadius: { type: String, default: '8px' },
   itemGridBgColor: { type: String, default: '#FFFFFF' },
+  font: { type: String, default: 'Roboto' },
+  textColor: { type: String, default: '#656565' },
+  itemGridStroke: { type: String, default: '#ECECEC' },
+  chartGradient: { type: Boolean, default: true },
+  bottomTimeline: { type: Boolean, default: true },
 });
 
 const dashboardSchema = new Schema<IDashboard & Document>({

@@ -22,10 +22,18 @@ interface ILayoutItem {
 }
 
 interface ITheme {
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  additionalColor: string;
   bgColor: string;
   itemGridRadius: string;
   itemGridBgColor: string;
-  // Other theme-related properties
+  font: string,
+  textColor: string,
+  itemGridStroke: string,
+  chartGradient: boolean,
+  bottomTimeline: boolean
 }
 
 interface IWriteDashboard extends Document {
@@ -34,3 +42,4 @@ interface IWriteDashboard extends Document {
 }
 
 export { IDashboard, ILayoutItem, ITheme, IWriteDashboard };
+
