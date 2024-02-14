@@ -172,9 +172,23 @@
               "type": "object",
               "properties": {
                 "dimension": { "type": "string" },
-                "measures": { "type": "string" },
+                "measures": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "columnName": { "type": "string" },
+                      "operator": { "type": "string" }
+                    }
+                  }
+                },
                 "differential": { "type": "string" },
-                "filters": { "type": "string" }
+                "filters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
               },
               "required": ["dimension"]
             }

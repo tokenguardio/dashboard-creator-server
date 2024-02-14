@@ -44,8 +44,8 @@ services:
       dockerfile: ../db-api/dev.Dockerfile
     command: npm run watch-node
     ports:
-      - '8082:8082'
-    env_file: ../db-api/.env.example 
+      - '8082:3000'
+    env_file: ../db-api/.env 
     volumes:
       - '../db-api:/usr/src/node-app' 
     networks:

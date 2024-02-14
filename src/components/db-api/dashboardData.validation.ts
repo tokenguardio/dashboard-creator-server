@@ -8,6 +8,24 @@ export const getTableColumnsValidation: ValidSchema = {
   }),
 };
 
+const filterColumnSchema = Joi.object({
+  columnName: Joi.string(),
+  filterValue: Joi.alternatives().conditional('columnName', {
+    is: Joi.exist(),
+    then: Joi.alternatives()
+      .try(
+        Joi.string(),
+        Joi.number(),
+        Joi.object({
+          start: Joi.string().required(),
+          end: Joi.string().required(),
+        }).required(),
+      )
+      .required(),
+    otherwise: Joi.forbidden(),
+  }),
+}).or('columnName', 'filterValue');
+
 export const generateChartDataValidation: ValidSchema = {
   params: Joi.object({
     schema: Joi.string().required(),
@@ -15,8 +33,8 @@ export const generateChartDataValidation: ValidSchema = {
   }),
   body: Joi.object({
     dimension: Joi.string().required(),
-    measures: Joi.string(),
-    differential: Joi.string().allow(''),
-    filters: Joi.string(),
+    measures: Joi.array().items(Joi.any()).optional(),
+    differential: Joi.string().allow('').optional(),
+    filters: Joi.array().items(filterColumnSchema).optional(),
   }),
 };

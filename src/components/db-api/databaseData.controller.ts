@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
 import * as chartDataGenerator from './helper/chartDataGenerator';
+import logger from '@core/utils/logger';
 
 const { API_BASE_URL } = process.env;
 
@@ -81,7 +82,7 @@ export const getTableColumns = async (req: Request, res: Response) => {
 
     res.status(200).send({ data: processedColumns });
   } catch (error) {
-    console.error('Error fetching table columns:', error);
+    logger.error('Error fetching table columns:', error);
     res.status(500).send({ message: 'Error fetching table columns' });
   }
 };
@@ -91,8 +92,13 @@ export const generateChartData = async (req: Request, res: Response) => {
     const { schema, table } = req.params;
     const { dimension, measures, differential, filters } = req.body;
 
-    const parsedMeasures = measures ? JSON.parse(measures) : [];
-    const parsedFilters = filters ? JSON.parse(filters) : [];
+    logger.debug('measures', measures);
+    const parsedMeasures = Array.isArray(measures)
+      ? measures
+      : JSON.parse(measures || '[]');
+    const parsedFilters = Array.isArray(filters)
+      ? filters
+      : JSON.parse(filters || '[]');
 
     const payload = chartDataGenerator.createChartDataPayload({
       dimension,
@@ -115,7 +121,7 @@ export const generateChartData = async (req: Request, res: Response) => {
 
     res.status(httpStatus.OK).send({ data: mappedData });
   } catch (error) {
-    console.error('Error generating chart data:', error);
+    logger.error('Error generating chart data:', error);
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: 'Error generating chart data' });
