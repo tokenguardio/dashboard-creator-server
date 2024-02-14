@@ -10,7 +10,7 @@ import {
 import {
   getTableColumnsValidation,
   generateChartDataValidation,
-} from './dashboardData.validation';
+} from './databaseData.validation';
 
 const router: Router = Router();
 

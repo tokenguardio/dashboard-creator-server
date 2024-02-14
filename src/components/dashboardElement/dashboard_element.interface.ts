@@ -5,3 +5,4 @@ export interface IDashboardElement {
   differential?: string;
   measures?: string[];
 }
+
