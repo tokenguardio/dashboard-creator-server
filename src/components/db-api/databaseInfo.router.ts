@@ -6,24 +6,24 @@ import {
   getAllSchemas,
   getAllTables,
   getTableColumns,
-} from './databaseData.controller';
+} from './databaseInfo.controller';
 import {
   getTableColumnsValidation,
   generateChartDataValidation,
-} from './databaseData.validation';
+} from './databaseInfo.validation';
 
 const router: Router = Router();
 
-router.get('/database-data/databases', getAllDatabases);
-router.get('/database-data/schemas', getAllSchemas);
-router.get('/database-data/tables', getAllTables);
+router.get('/database-info/databases', getAllDatabases);
+router.get('/database-info/schemas', getAllSchemas);
+router.get('/database-info/tables', getAllTables);
 router.get(
-  '/database-data/tables/:schemaName/:tableName/columns',
+  '/database-info/tables/:schemaName/:tableName/columns',
   validate(getTableColumnsValidation),
   getTableColumns,
 );
 router.post(
-  '/database-data/generate-chart-data/:schema/:table',
+  '/database-info/generate-chart-data/:schema/:table',
   validate(generateChartDataValidation),
   generateChartData,
 );

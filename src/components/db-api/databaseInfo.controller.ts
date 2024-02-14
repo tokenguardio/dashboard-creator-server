@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
-import * as chartDataGenerator from './helper/chartDataGenerator';
 import logger from '@core/utils/logger';
+import * as chartDataGenerator from './helper/chartDataGenerator';
 
 const { API_BASE_URL } = process.env;
 
