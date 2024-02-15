@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '@core/utils/logger';
 import httpStatus from 'http-status';
 import {
   create,
@@ -7,11 +8,17 @@ import {
   update,
   deleteById,
   addElement,
+  getElement,
   deleteElement,
   updateElementInDashboard,
+  addFilter,
+  getFilter,
+  deleteFilter,
+  updateFilter,
 } from '@components/dashboard/dashboard.service';
 import { IWriteDashboard } from '@components/dashboard/dashboard.interface';
-import { IDashboardElement } from '@components/dashboardElement/dashboard_element.interface';
+import { IDashboardElement } from '@components/dashboard/dashboardElement/dashboardElement.interface';
+import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
 
 const createDashboard = async (req: Request, res: Response) => {
   try {
@@ -84,7 +91,7 @@ const deleteDashboard = async (req: Request, res: Response) => {
 const addDashboardElement = async (req: Request, res: Response) => {
   try {
     const { dashboardId } = req.params;
-    const elementData = req.body;
+    const elementData = req.body as IDashboardElement;
 
     const newElement = await addElement(dashboardId, elementData);
 
@@ -92,6 +99,20 @@ const addDashboardElement = async (req: Request, res: Response) => {
       message: 'Element Added to Dashboard',
       output: newElement,
     });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const getDashboardElement = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, elementId } = req.params;
+    logger.info(`dashboardId: ${dashboardId} elementId: ${elementId}`);
+    const element = await getElement(dashboardId, elementId);
+
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Element read', output: element });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
@@ -114,11 +135,63 @@ const updateDashboardElement = async (req: Request, res: Response) => {
     const { dashboardId, elementId } = req.params;
     const elementData = req.body as IDashboardElement;
 
-    // eslint-disable-next-line no-underscore-dangle
-    elementData._id = elementId;
-
-    await updateElementInDashboard(dashboardId, elementData);
+    await updateElementInDashboard(dashboardId, elementId, elementData);
     res.status(httpStatus.OK).send({ message: 'Dashboard Element Updated' });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const addDashboardFilter = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const filterData = req.body as IDashboardFilter;
+
+    const newFilter = await addFilter(dashboardId, filterData);
+
+    res.status(httpStatus.CREATED).send({
+      message: 'Filter Added to Dashboard',
+      output: newFilter,
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const getDashboardFilter = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, filterId } = req.params;
+
+    const filter = await getFilter(dashboardId, filterId);
+
+    res.status(httpStatus.OK).json(filter);
+  } catch (err) {
+    console.error(`Error retrieving dashboard filter: ${err.message}`);
+    res
+      .status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: err.message });
+  }
+};
+
+const deleteDashboardFilter = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, filterId } = req.params;
+    await deleteFilter(dashboardId, filterId);
+    res
+      .status(httpStatus.ACCEPTED)
+      .send({ message: 'Filter Removed from Dashboard' });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const updateDashboardFilter = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, filterId } = req.params;
+    const filterData = req.body as IDashboardFilter;
+
+    await updateFilter(dashboardId, filterId, filterData);
+    res.status(httpStatus.OK).send({ message: 'Dashboard Filter Updated' });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
@@ -130,7 +203,12 @@ export {
   updateDashboard,
   deleteDashboard,
   addDashboardElement,
+  getDashboardElement,
   deleteDashboardElement,
   updateDashboardElement,
   getAllDashboards,
+  addDashboardFilter,
+  getDashboardFilter,
+  deleteDashboardFilter,
+  updateDashboardFilter,
 };

@@ -165,7 +165,10 @@
         ],
         "responses": {
           "201": {
-            "description": "Element added to Dashboard"
+            "description": "Element added to Dashboard",
+            "schema": {
+              "$ref": "#/definitions/DashboardElement"
+            }          
           },
           "400": {
             "description": "Invalid input"
@@ -177,6 +180,38 @@
       }
     },
     "/api/dashboard/{dashboardId}/element/{elementId}": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get element from a specific dashboard",
+        "description": "Endpoint for retrieving element from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "elementId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the element to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Element retrieved",
+            "schema": {
+              "$ref": "#/definitions/DashboardElement"
+            }
+          },
+          "404": {
+            "description": "Dashboard or Element not found"
+          }
+        }
+      },
       "delete": {
         "tags": ["Dashboard"],
         "summary": "Remove an element from a specific dashboard",
@@ -247,6 +282,146 @@
           }
         }
       }
+    },
+    "/api/dashboard/{dashboardId}/filter": {
+      "post": {
+        "tags": ["Dashboard"],
+        "summary": "Add a filter to a specific dashboard",
+        "description": "Endpoint for adding a filter to a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "filterData",
+            "in": "body",
+            "required": true,
+            "description": "Filter data to add",
+            "schema": {
+              "$ref": "#/definitions/DashboardFilterInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Filter added to Dashboard"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Dashboard not found"
+          }
+        }
+      }
+    },
+    "/api/dashboard/{dashboardId}/filter/{filterId}": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get a filter from a specific dashboard",
+        "description": "Endpoint for retrieving a filter from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "filterId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the filter to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filter retrieved",
+            "schema": {
+              "$ref": "#/definitions/DashboardFilter"
+            }
+          },
+          "404": {
+            "description": "Dashboard or Filter not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Dashboard"],
+        "summary": "Remove a filter from a specific dashboard",
+        "description": "Endpoint for removing a filter from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "filterId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the filter to remove"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Filter removed from Dashboard"
+          },
+          "404": {
+            "description": "Dashboard or Filter not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Dashboard"],
+        "summary": "Update a filter in a specific dashboard",
+        "description": "Endpoint for updating a filter in a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the dashboard"
+          },
+          {
+            "name": "filterId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique ID of the filter to update"
+          },
+          {
+            "name": "filterData",
+            "in": "body",
+            "required": true,
+            "description": "Updated filter data",
+            "schema": {
+              "$ref": "#/definitions/DashboardFilterInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filter updated in Dashboard"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Dashboard or Filter not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -291,9 +466,19 @@
     },
     "DashboardElementInput": {
       "type": "object",
-      "required": ["title"],
+      "required": ["title", "type"],
       "properties": {
         "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["button", "text", "basicQuery", "customQuery"]
+        },
+        "text": {
+          "type": "string"
+        },
+        "link": {
           "type": "string"
         },
         "dimension": {
@@ -307,12 +492,18 @@
           "items": {
             "type": "string"
           }
+        },
+        "queryId": {
+          "type": "number"
+        },
+        "visType": {
+          "type": "string"
         }
       }
     },
     "DashboardElement": {
       "type": "object",
-      "required": ["title"],
+      "required": ["_id", "title", "type"],
       "properties": {
         "_id": {
           "type": "string"
@@ -320,6 +511,16 @@
         "title": {
           "type": "string"
         },
+        "type": {
+          "type": "string",
+          "enum": ["button", "text", "basicQuery", "customQuery"]
+        },
+        "text": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
         "dimension": {
           "type": "string"
         },
@@ -331,14 +532,61 @@
           "items": {
             "type": "string"
           }
+        },
+        "queryId": {
+          "type": "number"
+        },
+        "visType": {
+          "type": "string"
+        }
+      }
+    },
+    "Theme": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "primaryColor": {
+          "type": "string"
+        },
+        "secondaryColor": {
+          "type": "string"
+        },
+        "additionalColor": {
+          "type": "string"
+        },
+        "bgColor": {
+          "type": "string"
+        },
+        "itemGridRadius": {
+          "type": "string"
+        },
+        "itemGridBgColor": {
+          "type": "string"
+        },
+        "font": {
+          "type": "string"
+        },
+        "textColor": {
+          "type": "string"
+        },
+        "itemGridStroke": {
+          "type": "string"
+        },
+        "chartGradient": {
+          "type": "boolean"
+        },
+        "bottomTimeline": {
+          "type": "boolean"
         }
       }
     },
     "LayoutItem": {
       "type": "object",
-      "required": ["id", "x", "y", "w", "h"],
+      "required": ["elementId", "x", "y", "w", "h"],
       "properties": {
-        "id": {
+        "elementId": {
           "type": "string"
         },
         "x": {
@@ -358,17 +606,52 @@
         }
       }
     },
-    "Theme": {
+    "DashboardFilterInput": {
       "type": "object",
+      "required": ["name", "options", "type", "component"],
       "properties": {
-        "bgColor": {
+        "name": {
           "type": "string"
         },
-        "itemGridRadius": {
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": ["static", "dynamic", "dependent"]
+        },
+        "component": {
+          "type": "string",
+          "enum": ["date_picker", "select", "multiselect", "checkbox", "radio"]
+        }
+      }
+    },
+    "DashboardFilter": {
+      "type": "object",
+      "required": ["name", "options", "type", "component"],
+      "properties": {
+        "_id": {
           "type": "string"
         },
-        "itemGridBgColor": {
+        "name": {
           "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": ["static", "dynamic", "dependent"]
+        },
+        "component": {
+          "type": "string",
+          "enum": ["date_picker", "select", "multiselect", "checkbox", "radio"]
         }
       }
     }

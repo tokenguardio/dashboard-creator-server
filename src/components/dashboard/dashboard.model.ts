@@ -1,21 +1,20 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose from 'mongoose';
 import {
   IDashboard,
   ILayoutItem,
   ITheme,
 } from '@components/dashboard/dashboard.interface';
 
-const layoutSchema = new Schema<ILayoutItem>({
+const layoutSchema = new mongoose.Schema<ILayoutItem>({
   id: { type: String, required: true, ref: 'DashboardElement' },
   x: { type: Number, required: true },
   y: { type: Number, required: true },
   w: { type: Number, required: true },
   h: { type: Number, required: true },
   static: { type: Boolean, default: false },
-  // Additional fields if needed
 });
 
-const themeSchema = new Schema<ITheme>({
+const themeSchema = new mongoose.Schema<ITheme>({
   name: { type: String, default: 'Custom Theme' },
   primaryColor: { type: String, default: '#48BD98' },
   secondaryColor: { type: String, default: '#0A425E' },
@@ -30,9 +29,10 @@ const themeSchema = new Schema<ITheme>({
   bottomTimeline: { type: Boolean, default: true },
 });
 
-const dashboardSchema = new Schema<IDashboard & Document>({
+const dashboardSchema = new mongoose.Schema<IDashboard & Document>({
   title: { type: String, required: true },
-  elements: [{ type: Schema.Types.ObjectId, ref: 'DashboardElement' }],
+  elements: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DashboardElement' }],
+  filters: [{type: mongoose.Schema.Types.ObjectId, ref: 'DashboardFilter'}],
   layout: [layoutSchema],
   theme: themeSchema,
 });

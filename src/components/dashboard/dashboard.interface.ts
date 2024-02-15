@@ -1,14 +1,13 @@
-// dashboard.interface.ts
-
 import { Document } from 'mongoose';
-import { IDashboardElement } from '@components/dashboardElement/dashboard_element.interface';
+import { IDashboardElement } from '@components/dashboard/dashboardElement/dashboardElement.interface';
+import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
 
 interface IDashboard extends Document {
-  _id: string;
   title: string;
   elements?: IDashboardElement[];
   layout?: ILayoutItem[];
   theme: ITheme;
+  filters?: IDashboardFilter[];
 }
 
 interface ILayoutItem {
@@ -18,10 +17,9 @@ interface ILayoutItem {
   w: number;
   h: number;
   static?: boolean;
-  // Other properties if needed
 }
 
-interface ITheme {
+interface ITheme extends Document {
   name: string;
   primaryColor: string;
   secondaryColor: string;
@@ -37,9 +35,10 @@ interface ITheme {
 }
 
 interface IWriteDashboard extends Document {
-  title: string;
-  theme: ITheme;
+  title?: string;
+  theme?: ITheme;
+  layout?: ILayoutItem[];
 }
 
-export { IDashboard, ILayoutItem, ITheme, IWriteDashboard };
+export { IDashboard, ILayoutItem, ITheme, IWriteDashboard }
 

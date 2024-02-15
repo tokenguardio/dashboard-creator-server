@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  web:
+  server:
     build:
       context: .
       dockerfile: ./Dev.Dockerfile
@@ -10,7 +10,7 @@ services:
       - '9229:9229'
     depends_on:
       - db
-    env_file: .localhost.env
+    env_file: .env
     volumes:
       - './src:/app/src'
       - './scripts/db:/app/scripts/db'
@@ -32,22 +32,22 @@ services:
       context: ../dashboard-creator-client
       dockerfile: ../dashboard-creator-client/Dockerfile
     ports:
-      - '5173:5173' 
+      - '5173:5173'
     volumes:
-      - '../dashboard-creator-client/src:/usr/src/app/src' 
+      - '../dashboard-creator-client/src:/usr/src/app/src'
     networks:
       - node-network
 
   db-api:
     build:
-      context: ../db-api 
+      context: ../db-api
       dockerfile: ../db-api/dev.Dockerfile
     command: npm run watch-node
     ports:
       - '8082:3000'
-    env_file: ../db-api/.env 
+    env_file: ../db-api/.env
     volumes:
-      - '../db-api:/usr/src/node-app' 
+      - '../db-api:/usr/src/node-app'
     networks:
       - node-network
 
