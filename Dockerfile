@@ -1,7 +1,7 @@
 # Production Dockerfile
 
 # First stage: Build the application
-FROM node:16-alpine as builder
+FROM node:18-slim
 
 WORKDIR /app
 

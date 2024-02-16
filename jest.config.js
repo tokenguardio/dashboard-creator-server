@@ -1,7 +1,7 @@
 // TODO: use babel to run it with ES6
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.localhost.env' });
 
 module.exports = {
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {

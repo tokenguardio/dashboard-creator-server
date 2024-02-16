@@ -11,8 +11,13 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+import cors from 'cors';
 
 db.connect();
+
+const opts = {
+  origin: [process.env.CLIENT_URL],
+};
 
 const app: Application = express();
 
@@ -23,6 +28,8 @@ app.use(httpLogger.successHandler);
 app.use(httpLogger.errorHandler);
 app.use(uniqueReqId);
 app.use(express.json());
+app.use(cors(opts));
+app.options('*', cors(opts));
 app.use(consts.API_ROOT_PATH, api);
 app.use(swaggerApiDocs);
 app.use(http404);

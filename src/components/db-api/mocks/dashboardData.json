@@ -1,0 +1,44 @@
+{
+  "databases": ["db1", "db2", "db3"],
+  "schemas": [
+    { "schema_name": "pg_catalog" },
+    { "schema_name": "information_schema" },
+    { "schema_name": "public" },
+    { "schema_name": "growth_index" }
+  ],
+  "tables": [
+    { "table_schema": "public", "table_name": "tokens_dict" },
+    { "table_schema": "public", "table_name": "market_data" },
+    { "table_schema": "growth_index", "table_name": "weekly_growth_index_old" },
+    { "table_schema": "public", "table_name": "artemis_raw_data" },
+    { "table_schema": "growth_index", "table_name": "weekly_growth_index" }
+  ],
+  "columns": {
+    "request": [
+      {
+        "column_name": "coingecko_id",
+        "data_type": "text",
+        "is_nullable": "NO"
+      },
+      { "column_name": "ticker", "data_type": "text", "is_nullable": "NO" }
+    ],
+    "response": [
+      {
+        "column_name": "coingecko_id",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "isMeasure": false,
+        "isDimension": true
+      },
+      {
+        "column_name": "ticker",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "isMeasure": false,
+        "isDimension": true
+      }
+    ]
+  },
+  "schema_name": "public",
+  "table_name": "tokens_dict"
+}
