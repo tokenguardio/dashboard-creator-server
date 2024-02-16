@@ -221,7 +221,8 @@ const prepareQueryPayload = (
         max_date = formatDate(new Date());
         break;
       default:
-        return 'Invalid period';
+        min_date = '1970-01-01';
+        max_date = formatDate(new Date());
     }
 
     return { min_date, max_date };
