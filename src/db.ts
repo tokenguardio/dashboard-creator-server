@@ -1,13 +1,14 @@
 import logger from '@core/utils/logger';
+import config from '@config/config';
 import mongoose from 'mongoose';
 
 const connect = async () => {
   try {
-    // Use environment variables for MongoDB connection details
-    const connectionString = process.env.DB_CONNECTION_STRING;
+    // Use configuration for the connection string and database name
+    const connectionString = config.mongoUrl;
     const mongoOptions = {
-      dbName: process.env.DB_NAME,
-      // Conditional inclusion of tlsCAFile option based on the presence of DB_TLS_CA_CERT_FILE in the environment variables
+      dbName: config.mongoDbName,
+      // Conditionally add the tlsCAFile option if the DB_TLS_CA_CERT_FILE environment variable is provided
       ...(process.env.DB_TLS_CA_CERT_FILE && {
         tlsCAFile: process.env.DB_TLS_CA_CERT_FILE,
       }),
@@ -19,7 +20,7 @@ const connect = async () => {
         : 'Connecting to MongoDB without CA cert',
     );
 
-    // Connect to MongoDB with the specified options
+    // Connect to MongoDB with the provided options
     await mongoose.connect(connectionString, mongoOptions);
     logger.info('Connected to MongoDB!');
   } catch (err) {
