@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import axios from 'axios';
 import logger from '@core/utils/logger';
 import httpStatus from 'http-status';
 import {
@@ -16,9 +17,16 @@ import {
   deleteFilter,
   updateFilter,
 } from '@components/dashboard/dashboard.service';
-import { IWriteDashboard } from '@components/dashboard/dashboard.interface';
-import { IDashboardElement } from '@components/dashboard/dashboardElement/dashboardElement.interface';
+import {
+  IDashboard,
+  IWriteDashboard,
+} from '@components/dashboard/dashboard.interface';
+import {
+  IDashboardElement,
+  IDashboardElementCustomQuery,
+} from '@components/dashboard/dashboardElement/dashboardElement.interface';
 import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
+const { API_BASE_URL } = process.env;
 
 const createDashboard = async (req: Request, res: Response) => {
   try {
@@ -142,11 +150,102 @@ const updateDashboardElement = async (req: Request, res: Response) => {
   }
 };
 
+const prepareQueryPayload = (
+  dashboard: IDashboard,
+  element: IDashboardElementCustomQuery,
+  filterValues: object[],
+) => {
+  let queryPayload: any = {
+    id: element.queryId, // Assuming queryId corresponds to the ID field in the payload
+    parameters: {
+      values: [],
+      identifiers: [],
+    },
+  };
+
+  // @ADAM KROL - to jest jakas implementacja z chata GPT
+  // trzeba tu zamiast tego dodać logikę 'poniedziałków'
+  const extractDateRange = (period: string) => {
+    let min_date: string;
+    let max_date: string;
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    switch (period) {
+      case 'last 30 days':
+        const last30Days = new Date();
+        last30Days.setDate(last30Days.getDate() - 30);
+        min_date = last30Days.toISOString().split('T')[0];
+        max_date = currentDate.toISOString().split('T')[0];
+        break;
+      case 'last 90 days':
+        const last90Days = new Date();
+        last90Days.setDate(last90Days.getDate() - 90);
+        min_date = last90Days.toISOString().split('T')[0];
+        max_date = currentDate.toISOString().split('T')[0];
+        break;
+      case 'last year':
+        min_date = `${currentYear - 1}-${currentMonth}-01`;
+        max_date = `${
+          currentYear - 1
+        }-${currentMonth}-${currentDate.getDate()}`;
+        break;
+      case 'all':
+        min_date = '1970-01-01';
+        max_date = currentDate.toISOString().split('T')[0];
+        break;
+      default:
+        min_date = '1970-01-01';
+        max_date = currentDate.toISOString().split('T')[0];
+        break;
+    }
+
+    return { min_date, max_date };
+  };
+
+  filterValues.forEach((filter: any) => {
+    if (filter.name === 'period') {
+      const { min_date, max_date } = extractDateRange(filter.value);
+      queryPayload.parameters.values.push({
+        name: 'min_date',
+        value: min_date,
+      });
+      queryPayload.parameters.values.push({
+        name: 'max_date',
+        value: max_date,
+      });
+    } else {
+      queryPayload.parameters.values.push({
+        name: filter.name,
+        value: filter.value,
+      });
+    }
+  });
+
+  return queryPayload;
+};
+
+// at some point it must be more universal to handle basic query types as well
 const getDashboardElementData = async (req: Request, res: Response) => {
   try {
-    res
-      .status(httpStatus.OK)
-      .send({ message: 'Dashboard Element Data Retrieved WORK IN PROGRESS' });
+    const { dashboardId, elementId } = req.params;
+    const filterValues = req.body.filters;
+
+    const dashboard = await read(dashboardId);
+    const element = (await getElement(
+      dashboardId,
+      elementId,
+    )) as IDashboardElementCustomQuery;
+    const queryPayload = prepareQueryPayload(dashboard, element, filterValues);
+    const url = `${API_BASE_URL}/execute-query`;
+    const response = await axios.post(url, queryPayload);
+
+    res.status(httpStatus.OK).send({
+      message: 'Dashboard Element Data Retrieved',
+      output: response.data,
+    });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
@@ -209,9 +308,22 @@ const updateDashboardFilter = async (req: Request, res: Response) => {
 
 const getDashboardFilterData = async (req: Request, res: Response) => {
   try {
-    res
-      .status(httpStatus.OK)
-      .send({ message: 'Dashboard Filter Data Retrieved (WORK IN PROGRESS)' });
+    // const { dashboardId, filterId } = req.params;
+    // const filterValues = req.body.filters;
+
+    // const dashboard = await read(dashboardId);
+    // const getFilter = (await getFilter(
+    //   dashboardId,
+    //   filterId,
+    // )) as IDashboardFilter;
+    // const queryPayload = prepareFilterQueryPayload(dashboard, filter, filterValues);
+    // const url = `${API_BASE_URL}/execute-query`;
+    // const response = await axios.post(url, queryPayload);
+
+    res.status(httpStatus.OK).send({
+      message: 'Dashboard Element Data Retrieved',
+      // output: response.data,
+    });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }

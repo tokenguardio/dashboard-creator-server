@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 
-interface IDashboardFilter  extends Document {
+interface IDashboardFilter extends Document {
   name: string;
   options: string[] | null;
   type: "static" | "dynamic" | "dependent";
