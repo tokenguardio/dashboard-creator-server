@@ -26,6 +26,7 @@ import {
   IDashboardElementCustomQuery,
 } from '@components/dashboard/dashboardElement/dashboardElement.interface';
 import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
+
 const { API_BASE_URL } = process.env;
 
 const createDashboard = async (req: Request, res: Response) => {
@@ -155,7 +156,7 @@ const prepareQueryPayload = (
   element: IDashboardElementCustomQuery,
   filterValues: object[],
 ) => {
-  let queryPayload: any = {
+  const queryPayload: any = {
     id: element.queryId, // Assuming queryId corresponds to the ID field in the payload
     parameters: {
       values: [],
@@ -163,43 +164,64 @@ const prepareQueryPayload = (
     },
   };
 
-  // @ADAM KROL - to jest jakas implementacja z chata GPT
-  // trzeba tu zamiast tego dodać logikę 'poniedziałków'
   const extractDateRange = (period: string) => {
     let min_date: string;
     let max_date: string;
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+    const getMostRecentMonday = (date: Date) => {
+      const dayOfWeek = date.getDay();
+      const mostRecentMonday = new Date(date);
+      mostRecentMonday.setDate(date.getDate() - ((dayOfWeek + 6) % 7));
+      return mostRecentMonday;
+    };
+
+    const calculateMondaysBack = (weeks: number) => {
+      const currentDate = new Date();
+      const mostRecentMonday = getMostRecentMonday(currentDate);
+      const pastDate = new Date(mostRecentMonday);
+      pastDate.setDate(mostRecentMonday.getDate() - weeks * 7);
+      return pastDate;
+    };
+
+    const calculateMondays = (days: number) => Math.ceil(days / 7) + 1;
 
     switch (period) {
-      case 'last 30 days':
-        const last30Days = new Date();
-        last30Days.setDate(last30Days.getDate() - 30);
-        min_date = last30Days.toISOString().split('T')[0];
-        max_date = currentDate.toISOString().split('T')[0];
+      case 'last week':
+        min_date = formatDate(calculateMondaysBack(1));
+        max_date = formatDate(new Date());
         break;
-      case 'last 90 days':
-        const last90Days = new Date();
-        last90Days.setDate(last90Days.getDate() - 90);
-        min_date = last90Days.toISOString().split('T')[0];
-        max_date = currentDate.toISOString().split('T')[0];
+      case '2 weeks':
+        min_date = formatDate(calculateMondaysBack(2));
+        max_date = formatDate(new Date());
+        break;
+      case 'previous week':
+        min_date = formatDate(calculateMondaysBack(2));
+        max_date = formatDate(calculateMondaysBack(1));
+        break;
+      case 'last month':
+        min_date = formatDate(calculateMondaysBack(calculateMondays(30)));
+        max_date = formatDate(new Date());
+        break;
+      case '3 months':
+        min_date = formatDate(calculateMondaysBack(calculateMondays(90)));
+        max_date = formatDate(new Date());
+        break;
+      case '6 months':
+        min_date = formatDate(calculateMondaysBack(calculateMondays(180)));
+        max_date = formatDate(new Date());
         break;
       case 'last year':
-        min_date = `${currentYear - 1}-${currentMonth}-01`;
-        max_date = `${
-          currentYear - 1
-        }-${currentMonth}-${currentDate.getDate()}`;
+        min_date = formatDate(calculateMondaysBack(calculateMondays(365)));
+        max_date = formatDate(new Date());
         break;
-      case 'all':
+      case 'all time':
         min_date = '1970-01-01';
-        max_date = currentDate.toISOString().split('T')[0];
+        max_date = formatDate(new Date());
         break;
       default:
-        min_date = '1970-01-01';
-        max_date = currentDate.toISOString().split('T')[0];
-        break;
+        return 'Invalid period';
     }
 
     return { min_date, max_date };
