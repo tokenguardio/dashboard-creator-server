@@ -168,7 +168,7 @@
             "description": "Element added to Dashboard",
             "schema": {
               "$ref": "#/definitions/DashboardElement"
-            }          
+            }
           },
           "400": {
             "description": "Invalid input"
@@ -468,6 +468,9 @@
       "type": "object",
       "required": ["title", "type"],
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "title": {
           "type": "string"
         },
@@ -503,9 +506,9 @@
     },
     "DashboardElement": {
       "type": "object",
-      "required": ["_id", "title", "type"],
+      "required": ["id", "title", "type"],
       "properties": {
-        "_id": {
+        "id": {
           "type": "string"
         },
         "title": {

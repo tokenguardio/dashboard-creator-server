@@ -12,13 +12,14 @@ import { IDashboardElement } from '@components/dashboard/dashboardElement/dashbo
 import { IDashboardFilter } from './dashboardFilter/dashboardFilter.interface';
 
 const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
+  logger.info(`creating dashboard with data ${JSON.stringify(dashboardData)}`);
   const newDashboard = await DashboardModel.create({
-    ...dashboardData,
     elements: [],
     layout: [],
     filters: [],
+    ...dashboardData,
   });
-  logger.debug(`Dashboard created: %O`, newDashboard);
+  logger.info(`Dashboard created: %O`, newDashboard);
   return newDashboard;
 };
 
@@ -86,7 +87,7 @@ const addElement = async (
 ): Promise<IDashboardElement> => {
   try {
     // Check if the dashboard exists
-    const dashboard = await DashboardModel.findById(dashboardId);
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }

@@ -10,10 +10,12 @@ import {
   getDashboardElement,
   deleteDashboardElement,
   updateDashboardElement,
+  getDashboardElementData,
   addDashboardFilter,
   getDashboardFilter,
   deleteDashboardFilter,
   updateDashboardFilter,
+  getDashboardFilterData,
 } from './dashboard.controller';
 // Import any necessary validations for dashboard and dashboard elements
 
@@ -37,6 +39,11 @@ router.put(
   updateDashboardElement,
 );
 
+router.post(
+  '/dashboard/:dashboardId/element/:elementId/exec',
+  getDashboardElementData,
+);
+
 // Filters
 router.post('/dashboard/:dashboardId/filter', addDashboardFilter);
 router.get('/dashboard/:dashboardId/filter/:filterId', getDashboardFilter);
@@ -45,5 +52,10 @@ router.delete(
   deleteDashboardFilter,
 );
 router.put('/dashboard/:dashboardId/filter/:filterId', updateDashboardFilter);
+
+router.post(
+  '/dashboard/:dashboardId/filter/:filterId/exec',
+  getDashboardFilterData,
+);
 
 export default router;

@@ -142,6 +142,16 @@ const updateDashboardElement = async (req: Request, res: Response) => {
   }
 };
 
+const getDashboardElementData = async (req: Request, res: Response) => {
+  try {
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Dashboard Element Data Retrieved WORK IN PROGRESS' });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
 const addDashboardFilter = async (req: Request, res: Response) => {
   try {
     const { dashboardId } = req.params;
@@ -197,6 +207,16 @@ const updateDashboardFilter = async (req: Request, res: Response) => {
   }
 };
 
+const getDashboardFilterData = async (req: Request, res: Response) => {
+  try {
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Dashboard Filter Data Retrieved (WORK IN PROGRESS)' });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
 export {
   createDashboard,
   readDashboard,
@@ -206,9 +226,11 @@ export {
   getDashboardElement,
   deleteDashboardElement,
   updateDashboardElement,
+  getDashboardElementData,
   getAllDashboards,
   addDashboardFilter,
   getDashboardFilter,
   deleteDashboardFilter,
   updateDashboardFilter,
+  getDashboardFilterData,
 };
