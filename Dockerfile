@@ -1,7 +1,5 @@
-# Production Dockerfile
-
 # First stage: Build the application
-FROM node:18-slim
+FROM node:18-slim as builder
 
 WORKDIR /app
 
@@ -19,6 +17,8 @@ RUN npm run build
 # Second stage: Setup the production image
 FROM node:16-alpine
 
+WORKDIR /app
+
 # Copy built assets from the builder stage to production image
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
@@ -27,4 +27,4 @@ COPY --from=builder /app/node_modules ./node_modules
 # Run the server in production mode
 CMD npm run server:prod
 
-EXPOSE 8080 
+EXPOSE 8080

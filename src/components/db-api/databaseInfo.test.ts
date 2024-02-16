@@ -4,7 +4,7 @@ import httpStatus from 'http-status';
 import { jest } from '@jest/globals';
 import app from '@app';
 
-import mockData from './mocks/DashboardData.json';
+import mockData from './mocks/dashboardData.json';
 import queryResponses from './mocks/queryResponses.json';
 
 jest.mock('axios');
