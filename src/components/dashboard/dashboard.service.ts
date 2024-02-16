@@ -128,7 +128,7 @@ const getElement = async (
     }
 
     const element = dashboard.elements.find(
-      (element) => element._id.toString() === elementId,
+      (element) => element.id.toString() === elementId,
     );
 
     if (!element) {
