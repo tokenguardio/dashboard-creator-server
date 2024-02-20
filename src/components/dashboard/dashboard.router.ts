@@ -16,6 +16,7 @@ import {
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,
+  getDashboardElementByQueryId,
 } from './dashboard.controller';
 // Import any necessary validations for dashboard and dashboard elements
 
@@ -38,10 +39,13 @@ router.put(
   '/dashboard/:dashboardId/element/:elementId',
   updateDashboardElement,
 );
-
 router.post(
   '/dashboard/:dashboardId/element/:elementId/exec',
   getDashboardElementData,
+);
+router.get(
+  '/dashboard/:dashboardId/element/query/:queryId',
+  getDashboardElementByQueryId,
 );
 
 // Filters

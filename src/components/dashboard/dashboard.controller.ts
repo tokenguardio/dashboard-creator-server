@@ -16,6 +16,7 @@ import {
   getFilter,
   deleteFilter,
   updateFilter,
+  getElementByQueryId,
 } from '@components/dashboard/dashboard.service';
 import {
   IDashboard,
@@ -352,6 +353,34 @@ const getDashboardFilterData = async (req: Request, res: Response) => {
   }
 };
 
+const getDashboardElementByQueryId = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const { queryId } = req.body;
+
+    logger.info(
+      `Searching in dashboardId: ${dashboardId} for queryId: ${queryId}`,
+    );
+
+    const element = await getElementByQueryId(dashboardId, Number(queryId));
+
+    if (!element) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .send({ message: 'Element not found' });
+    }
+
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Element Retrieved', output: element });
+  } catch (err) {
+    logger.error(`Error retrieving element: %O`, err);
+    res
+      .status(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message });
+  }
+};
+
 export {
   createDashboard,
   readDashboard,
@@ -368,4 +397,5 @@ export {
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,
+  getDashboardElementByQueryId,
 };

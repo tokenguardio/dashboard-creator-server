@@ -17,7 +17,7 @@ import {
 } from './dashboardElement.interface';
 
 const createDashboardElement = async (
-  elementData: IDashboardElement
+  elementData: IDashboardElement,
 ): Promise<IDashboardElement> => {
   try {
     let newElement: any;
@@ -25,28 +25,28 @@ const createDashboardElement = async (
     switch (elementData.type) {
       case 'button':
         newElement = await DashboardElementButtonModel.create(
-          elementData as IDashboardElementButton
+          elementData as IDashboardElementButton,
         );
         break;
       case 'text':
         newElement = await DashboardElementTextModel.create(
-          elementData as IDashboardElementText
+          elementData as IDashboardElementText,
         );
         break;
       case 'basicQuery':
         newElement = await DashboardElementBasicQueryModel.create(
-          elementData as IDashboardElementBasicQuery
+          elementData as IDashboardElementBasicQuery,
         );
         break;
       case 'customQuery':
         newElement = await DashboardElementCustomQueryModel.create(
-          elementData as IDashboardElementCustomQuery
+          elementData as IDashboardElementCustomQuery,
         );
         break;
       default:
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          `Invalid dashboard element type: ${elementData.type}`
+          `Invalid dashboard element type: ${elementData.type}`,
         );
     }
 
@@ -56,16 +56,16 @@ const createDashboardElement = async (
     logger.error(`DashboardElement create error: %O`, err.message);
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'Dashboard element was not created!'
+      'Dashboard element was not created!',
     );
   }
 };
 
 const getDashboardElement = async (
-  id: string
+  id: string,
 ): Promise<IDashboardElement | null> => {
   logger.debug(`Fetching DashboardElement with id ${id}`);
-  const element = await DashboardElementModel.findOne({id}).lean();
+  const element = await DashboardElementModel.findOne({ id }).lean();
 
   if (!element) {
     return null;
@@ -83,21 +83,20 @@ const getDashboardElement = async (
     default:
       throw new AppError(
         httpStatus.INTERNAL_SERVER_ERROR,
-        `Unexpected dashboard element type: ${element.type}`
+        `Unexpected dashboard element type: ${element.type}`,
       );
   }
 };
 
-
 const updateDashboardElement = async (
   elementId: string,
-  elementData: IDashboardElement
+  elementData: IDashboardElement,
 ): Promise<boolean> => {
   try {
     if (!elementData || !elementId) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        'Invalid element data or missing element ID'
+        'Invalid element data or missing element ID',
       );
     }
 
@@ -111,34 +110,34 @@ const updateDashboardElement = async (
         await DashboardElementButtonModel.findByIdAndUpdate(
           elementId,
           elementData as IDashboardElementButton,
-          { new: true }
+          { new: true },
         );
         break;
       case 'text':
         await DashboardElementTextModel.findByIdAndUpdate(
           elementId,
           elementData as IDashboardElementText,
-          { new: true }
+          { new: true },
         );
         break;
       case 'basicQuery':
         await DashboardElementBasicQueryModel.findByIdAndUpdate(
           elementId,
           elementData as IDashboardElementBasicQuery,
-          { new: true }
+          { new: true },
         );
         break;
       case 'customQuery':
         await DashboardElementCustomQueryModel.findByIdAndUpdate(
           elementId,
           elementData as IDashboardElementCustomQuery,
-          { new: true }
+          { new: true },
         );
         break;
       default:
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          `Invalid dashboard element type: ${elementData.type}`
+          `Invalid dashboard element type: ${elementData.type}`,
         );
     }
 

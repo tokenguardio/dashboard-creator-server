@@ -128,7 +128,7 @@ const getElement = async (
     }
 
     const element = dashboard.elements.find(
-      (element) => element.id.toString() === elementId,
+      (elt) => elt.id.toString() === elementId,
     );
 
     if (!element) {
@@ -357,6 +357,41 @@ const updateFilter = async (
   }
 };
 
+const getElementByQueryId = async (dashboardId: string, queryId: number) => {
+  try {
+    logger.info(
+      `Searching in dashboardId: ${dashboardId} for queryId: ${queryId}`,
+    );
+    const dashboard = await DashboardModel.findById(dashboardId).populate({
+      path: 'elements',
+      match: { type: 'basicQuery', queryId }, // Ensure to match elements of type basicQuery and the specific queryId
+    });
+
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    // Since populate with match might return an empty array if no elements are found
+    if (dashboard.elements.length === 0) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Element not found in dashboard',
+      );
+    }
+
+    const element = dashboard.elements[0]; // Assuming match returns at least one element
+    logger.debug(`Element read from dashboard ${dashboardId}: ${element}`);
+    return element;
+  } catch (err) {
+    logger.error(`Error retrieving element from dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error retrieving element from dashboard',
+      err.message,
+    );
+  }
+};
+
 export {
   create,
   read,
@@ -371,4 +406,5 @@ export {
   getFilter,
   deleteFilter,
   updateFilter,
+  getElementByQueryId,
 };
