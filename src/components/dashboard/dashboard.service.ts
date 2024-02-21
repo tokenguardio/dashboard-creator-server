@@ -290,6 +290,38 @@ const getFilter = async (
   }
 };
 
+const getFilterByName = async (
+  dashboardId: string,
+  filterName: string,
+): Promise<IDashboardFilter> => {
+  try {
+    const dashboard = await DashboardModel.findById(dashboardId).populate(
+      'filters',
+    );
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    const filter = dashboard.filters.find(
+      (filterElement) => filterElement.name === filterName,
+    );
+    if (!filter) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        `Filter '${filterName}' not found in dashboard`,
+      );
+    }
+
+    return filter;
+  } catch (err) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `Error retrieving filter '${filterName}' from dashboard`,
+      err.message,
+    );
+  }
+};
+
 const deleteFilter = async (
   dashboardId: string,
   filterId: string,
@@ -407,4 +439,5 @@ export {
   deleteFilter,
   updateFilter,
   getElementByQueryId,
+  getFilterByName,
 };

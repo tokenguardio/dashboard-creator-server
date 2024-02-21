@@ -14,6 +14,7 @@ import {
   updateElementInDashboard,
   addFilter,
   getFilter,
+  getFilterByName,
   deleteFilter,
   updateFilter,
   getElementByQueryId,
@@ -299,7 +300,22 @@ const getDashboardFilter = async (req: Request, res: Response) => {
 
     res.status(httpStatus.OK).json(filter);
   } catch (err) {
-    console.error(`Error retrieving dashboard filter: ${err.message}`);
+    logger.error(`Error retrieving dashboard filter: ${err.message}`);
+    res
+      .status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: err.message });
+  }
+};
+
+const getDashboardFilterByName = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, filterName } = req.params;
+
+    const filter = await getFilterByName(dashboardId, filterName);
+
+    res.status(httpStatus.OK).json(filter);
+  } catch (err) {
+    logger.error(`Error retrieving dashboard filter by name: ${err.message}`);
     res
       .status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: err.message });
@@ -394,6 +410,7 @@ export {
   getAllDashboards,
   addDashboardFilter,
   getDashboardFilter,
+  getDashboardFilterByName,
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,

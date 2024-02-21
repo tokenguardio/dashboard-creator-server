@@ -13,6 +13,7 @@ import {
   getDashboardElementData,
   addDashboardFilter,
   getDashboardFilter,
+  getDashboardFilterByName,
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,
@@ -51,6 +52,10 @@ router.get(
 // Filters
 router.post('/dashboard/:dashboardId/filter', addDashboardFilter);
 router.get('/dashboard/:dashboardId/filter/:filterId', getDashboardFilter);
+router.get(
+  '/dashboard/:dashboardId/filterByName/:filterName',
+  getDashboardFilterByName,
+);
 router.delete(
   '/dashboard/:dashboardId/filter/:filterId',
   deleteDashboardFilter,
