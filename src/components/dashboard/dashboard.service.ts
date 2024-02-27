@@ -6,6 +6,7 @@ import * as dashboardElementService from '@components/dashboard/dashboardElement
 import * as dashboardFilterService from '@components/dashboard/dashboardFilter/dashboardFilter.service';
 import {
   IDashboard,
+  ILayoutItem,
   IWriteDashboard,
 } from '@components/dashboard/dashboard.interface';
 import { IDashboardElement } from '@components/dashboard/dashboardElement/dashboardElement.interface';
@@ -127,6 +128,9 @@ const getElement = async (
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
 
+    dashboard.elements.forEach((element) => {
+      logger.debug(`log element, ${element.id}`);
+    });
     const element = dashboard.elements.find(
       (elt) => elt.id.toString() === elementId,
     );
@@ -424,6 +428,110 @@ const getElementByQueryId = async (dashboardId: string, queryId: number) => {
   }
 };
 
+const addLayoutItem = async (
+  dashboardId: string,
+  layoutItem: ILayoutItem,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    dashboard.layout.push(layoutItem);
+    await dashboard.save();
+
+    logger.info(`Layout item added to dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error adding layout item to dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error adding layout item to dashboard',
+      err.message,
+    );
+  }
+};
+
+const getLayoutItems = async (dashboardId: string): Promise<ILayoutItem[]> => {
+  try {
+    const dashboard = await DashboardModel.findById(dashboardId);
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    logger.info(`Retrieved layout items from dashboard: ${dashboardId}`);
+    return dashboard.layout;
+  } catch (err) {
+    logger.error(
+      `Error retrieving layout items from dashboard: %O`,
+      err.message,
+    );
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error retrieving layout items from dashboard',
+      err.message,
+    );
+  }
+};
+
+const updateLayoutItem = async (
+  dashboardId: string,
+  layoutItemId: string,
+  layoutItemData: ILayoutItem,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    const layoutItemIndex = dashboard.layout.findIndex(
+      (item) => item.id === layoutItemId,
+    );
+    if (layoutItemIndex === -1) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Layout item not found');
+    }
+
+    dashboard.layout[layoutItemIndex] = layoutItemData;
+    await dashboard.save();
+
+    logger.info(`Layout item updated in dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error updating layout item in dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error updating layout item in dashboard',
+      err.message,
+    );
+  }
+};
+
+const deleteLayoutItem = async (
+  dashboardId: string,
+  layoutItemId: string,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    dashboard.layout = dashboard.layout.filter(
+      (item) => item.id !== layoutItemId,
+    );
+    await dashboard.save();
+
+    logger.info(`Layout item deleted from dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error deleting layout item from dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error deleting layout item from dashboard',
+      err.message,
+    );
+  }
+};
+
 export {
   create,
   read,
@@ -440,4 +548,8 @@ export {
   updateFilter,
   getElementByQueryId,
   getFilterByName,
+  addLayoutItem,
+  getLayoutItems,
+  updateLayoutItem,
+  deleteLayoutItem,
 };

@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import AppError from '@core/utils/appError';
 import logger from '@core/utils/logger';
+import { v4 as uuidv4 } from 'uuid';
 import {
   DashboardElementModel,
   DashboardElementButtonModel,

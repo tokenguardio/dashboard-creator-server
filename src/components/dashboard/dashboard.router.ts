@@ -18,6 +18,10 @@ import {
   updateDashboardFilter,
   getDashboardFilterData,
   getDashboardElementByQueryId,
+  addDashboardLayoutItem,
+  getDashboardLayoutItems,
+  updateDashboardLayoutItem,
+  deleteDashboardLayoutItem,
 } from './dashboard.controller';
 // Import any necessary validations for dashboard and dashboard elements
 
@@ -65,6 +69,18 @@ router.put('/dashboard/:dashboardId/filter/:filterId', updateDashboardFilter);
 router.post(
   '/dashboard/:dashboardId/filter/:filterId/exec',
   getDashboardFilterData,
+);
+
+// Layouts
+router.post('/dashboard/:dashboardId/layout', addDashboardLayoutItem);
+router.get('/dashboard/:dashboardId/layout', getDashboardLayoutItems);
+router.put(
+  '/dashboard/:dashboardId/layout/:layoutItemId',
+  updateDashboardLayoutItem,
+);
+router.delete(
+  '/dashboard/:dashboardId/layout/:layoutItemId',
+  deleteDashboardLayoutItem,
 );
 
 export default router;

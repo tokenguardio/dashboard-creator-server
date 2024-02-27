@@ -24,7 +24,9 @@ export interface IDashboardElementVis extends IDashboardElement {
     | 'multiAreaChart'
     | 'lineChart'
     | 'multiLineChart'
-    | 'table';
+    | 'table'
+    | 'singleValue'
+    | 'pieChart';
 }
 
 export interface IDashboardElementBasicQuery extends IDashboardElementVis {

@@ -18,6 +18,10 @@ import {
   deleteFilter,
   updateFilter,
   getElementByQueryId,
+  addLayoutItem,
+  getLayoutItems,
+  updateLayoutItem,
+  deleteLayoutItem,
 } from '@components/dashboard/dashboard.service';
 import {
   IDashboard,
@@ -35,6 +39,7 @@ const createDashboard = async (req: Request, res: Response) => {
   try {
     const dashboardData = req.body as IWriteDashboard;
     const createdDashboard = await create(dashboardData);
+    logger.debug(`log dashboardData, ${dashboardData}`);
 
     res.status(httpStatus.CREATED).send({
       message: 'Dashboard Created',
@@ -44,6 +49,7 @@ const createDashboard = async (req: Request, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
 };
+//
 
 const getAllDashboards = async (req: Request, res: Response) => {
   try {
@@ -103,6 +109,8 @@ const addDashboardElement = async (req: Request, res: Response) => {
   try {
     const { dashboardId } = req.params;
     const elementData = req.body as IDashboardElement;
+    logger.debug(`elementData ${JSON.stringify(elementData)}`);
+    logger.debug(`dashboardId ${dashboardId}`);
 
     const newElement = await addElement(dashboardId, elementData);
 
@@ -397,6 +405,66 @@ const getDashboardElementByQueryId = async (req: Request, res: Response) => {
   }
 };
 
+const addDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const layoutItemData = req.body; // Assuming ILayoutItem is the type
+
+    await addLayoutItem(dashboardId, layoutItemData);
+
+    res.status(httpStatus.CREATED).send({
+      message: 'Layout Item Added to Dashboard',
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const getDashboardLayoutItems = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+
+    const layoutItems = await getLayoutItems(dashboardId);
+
+    res.status(httpStatus.OK).send({
+      message: 'Layout Items retrieved',
+      output: layoutItems,
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const updateDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const layoutItemId = req.body.id; // Assuming the client sends the layout item's ID in the body
+    const layoutItemData = req.body; // The rest of the body is the layout item data
+
+    await updateLayoutItem(dashboardId, layoutItemId, layoutItemData);
+
+    res.status(httpStatus.OK).send({
+      message: 'Layout Item Updated in Dashboard',
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const deleteDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, layoutItemId } = req.params;
+
+    await deleteLayoutItem(dashboardId, layoutItemId);
+
+    res.status(httpStatus.ACCEPTED).send({
+      message: 'Layout Item Removed from Dashboard',
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
 export {
   createDashboard,
   readDashboard,
@@ -415,4 +483,8 @@ export {
   updateDashboardFilter,
   getDashboardFilterData,
   getDashboardElementByQueryId,
+  addDashboardLayoutItem,
+  getDashboardLayoutItems,
+  updateDashboardLayoutItem,
+  deleteDashboardLayoutItem,
 };
