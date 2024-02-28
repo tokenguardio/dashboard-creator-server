@@ -6,43 +6,66 @@ import logger from '@core/utils/logger';
 import {
   DashboardFilterModel,
   DashboardFilterStaticModel,
+  DashboardFilterHiddenModel,
   DashboardFilterDynamicModel,
   DashboardFilterDependentModel,
 } from './dashboardFilter.model';
 import {
   IDashboardFilter,
   IDashboardFilterStatic,
+  IDashboardFilterHidden,
   IDashboardFilterDynamic,
   IDashboardFilterDependent,
 } from './dashboardFilter.interface';
 
-const createFilter = async (filterData: IDashboardFilter): Promise<IDashboardFilter> => {
+const createFilter = async (
+  filterData: IDashboardFilter,
+): Promise<IDashboardFilter> => {
   try {
     let newFilter: any;
 
     switch (filterData.type) {
       case 'static':
-        newFilter = await DashboardFilterStaticModel.create(filterData as IDashboardFilterStatic);
+        newFilter = await DashboardFilterStaticModel.create(
+          filterData as IDashboardFilterStatic,
+        );
+        break;
+      case 'hidden':
+        newFilter = await DashboardFilterHiddenModel.create(
+          filterData as IDashboardFilterHidden,
+        );
         break;
       case 'dynamic':
-        newFilter = await DashboardFilterDynamicModel.create(filterData as IDashboardFilterDynamic);
+        newFilter = await DashboardFilterDynamicModel.create(
+          filterData as IDashboardFilterDynamic,
+        );
         break;
       case 'dependent':
-        newFilter = await DashboardFilterDependentModel.create(filterData as IDashboardFilterDependent);
+        newFilter = await DashboardFilterDependentModel.create(
+          filterData as IDashboardFilterDependent,
+        );
         break;
       default:
-        throw new AppError(httpStatus.BAD_REQUEST, `Invalid dashboard filter type: ${filterData.type}`);
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          `Invalid dashboard filter type: ${filterData.type}`,
+        );
     }
 
     logger.debug(`DashboardFilter created: %O`, newFilter);
     return newFilter;
   } catch (err) {
     logger.error(`DashboardFilter create error: %O`, err.message);
-    throw new AppError(httpStatus.BAD_REQUEST, 'Dashboard filter was not created!');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Dashboard filter was not created!',
+    );
   }
 };
 
-const getFilter = async (filterId: string): Promise<IDashboardFilter | null> => {
+const getFilter = async (
+  filterId: string,
+): Promise<IDashboardFilter | null> => {
   logger.debug(`Fetching DashboardFilter with id ${filterId}`);
   const filter = await DashboardFilterModel.findById(filterId).lean();
 
@@ -53,19 +76,30 @@ const getFilter = async (filterId: string): Promise<IDashboardFilter | null> => 
   switch (filter.type) {
     case 'static':
       return filter as IDashboardFilterStatic;
+    case 'hidden':
+      return filter as IDashboardFilterHidden;
     case 'dynamic':
       return filter as IDashboardFilterDynamic;
     case 'dependent':
       return filter as IDashboardFilterDependent;
     default:
-      throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, `Unexpected dashboard filter type: ${filter.type}`);
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        `Unexpected dashboard filter type: ${filter.type}`,
+      );
   }
 };
 
-const updateFilter = async (filterId: string, filterData: IDashboardFilter): Promise<boolean> => {
+const updateFilter = async (
+  filterId: string,
+  filterData: IDashboardFilter,
+): Promise<boolean> => {
   try {
     if (!filterData || !filterId) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Invalid filter data or missing filter ID');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Invalid filter data or missing filter ID',
+      );
     }
 
     const existingFilter = await DashboardFilterModel.findById(filterId);
@@ -75,16 +109,38 @@ const updateFilter = async (filterId: string, filterData: IDashboardFilter): Pro
 
     switch (filterData.type) {
       case 'static':
-        await DashboardFilterStaticModel.findByIdAndUpdate(filterId, filterData as IDashboardFilterStatic, { new: true });
+        await DashboardFilterStaticModel.findByIdAndUpdate(
+          filterId,
+          filterData as IDashboardFilterStatic,
+          { new: true },
+        );
+        break;
+      case 'hidden':
+        await DashboardFilterHiddenModel.findByIdAndUpdate(
+          filterId,
+          filterData as IDashboardFilterHidden,
+          { new: true },
+        );
         break;
       case 'dynamic':
-        await DashboardFilterDynamicModel.findByIdAndUpdate(filterId, filterData as IDashboardFilterDynamic, { new: true });
+        await DashboardFilterDynamicModel.findByIdAndUpdate(
+          filterId,
+          filterData as IDashboardFilterDynamic,
+          { new: true },
+        );
         break;
       case 'dependent':
-        await DashboardFilterDependentModel.findByIdAndUpdate(filterId, filterData as IDashboardFilterDependent, { new: true });
+        await DashboardFilterDependentModel.findByIdAndUpdate(
+          filterId,
+          filterData as IDashboardFilterDependent,
+          { new: true },
+        );
         break;
       default:
-        throw new AppError(httpStatus.BAD_REQUEST, `Invalid dashboard filter type: ${filterData.type}`);
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          `Invalid dashboard filter type: ${filterData.type}`,
+        );
     }
 
     logger.debug(`DashboardFilter updated`);
@@ -101,9 +157,4 @@ const deleteFilter = async (filterId: string): Promise<boolean> => {
   return true;
 };
 
-export { 
-  createFilter,
-  getFilter,
-  updateFilter,
-  deleteFilter
-};
+export { createFilter, getFilter, updateFilter, deleteFilter };

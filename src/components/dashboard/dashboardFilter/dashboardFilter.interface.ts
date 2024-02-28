@@ -1,15 +1,25 @@
 import { Document } from 'mongoose';
 
+interface IDashboardFilterValue {
+  name: string;
+  value: any;
+}
+
 interface IDashboardFilter extends Document {
   name: string;
+  title: string;
   options: string[] | null;
-  type: 'static' | 'dynamic' | 'dependent';
+  type: 'static' | 'dynamic' | 'dependent' | 'hidden';
   component: 'datePicker' | 'select' | 'multiselect' | 'checkbox' | 'radio';
   defaultValue: any;
 }
 
 interface IDashboardFilterStatic extends IDashboardFilter {
   type: 'static';
+}
+
+interface IDashboardFilterHidden extends IDashboardFilter {
+  type: 'hidden';
 }
 
 interface IDashboardFilterDynamic extends IDashboardFilter {
@@ -26,8 +36,10 @@ interface IDashboardFilterDependent extends IDashboardFilter {
 }
 
 export {
+  IDashboardFilterValue,
   IDashboardFilter,
   IDashboardFilterStatic,
+  IDashboardFilterHidden,
   IDashboardFilterDynamic,
   IDashboardFilterDependent,
 };

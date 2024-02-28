@@ -26,7 +26,6 @@ const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
 
 const read = async (id: string): Promise<IDashboard> => {
   try {
-    logger.debug('log id', id);
     logger.debug(`Fetching dashboard with id ${id}`);
     // Populate the elements field
     const dashboard = await DashboardModel.findOne({ _id: id })
@@ -272,14 +271,12 @@ const getFilter = async (
   try {
     const dashboard = await (
       await DashboardModel.findById(dashboardId)
-    ).populated('filters');
+    ).populate('filters');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
 
-    const filter = dashboard.filters.find(
-      (filter) => filter._id.toString() === filterId,
-    );
+    const filter = dashboard.filters.find((x) => x._id.toString() === filterId);
     if (!filter) {
       throw new AppError(httpStatus.NOT_FOUND, 'Filter not found in dashboard');
     }

@@ -2,16 +2,18 @@ import mongoose from 'mongoose';
 import {
   IDashboardFilter,
   IDashboardFilterStatic,
+  IDashboardFilterHidden,
   IDashboardFilterDynamic,
   IDashboardFilterDependent,
 } from './dashboardFilter.interface';
 
 const filterSchema = new mongoose.Schema<IDashboardFilter>({
   name: { type: String, required: true },
+  title: { type: String, required: true },
   options: [{ type: String }],
   type: {
     type: String,
-    enum: ['static', 'dynamic', 'dependent'],
+    enum: ['static', 'hidden', 'dynamic', 'dependent'],
     required: true,
   },
   component: {
@@ -23,6 +25,8 @@ const filterSchema = new mongoose.Schema<IDashboardFilter>({
 });
 
 const staticFilterSchema = new mongoose.Schema<IDashboardFilterStatic>({});
+
+const hiddenFilterSchema = new mongoose.Schema<IDashboardFilterHidden>({});
 
 const dynamicFilterSchema = new mongoose.Schema<IDashboardFilterDynamic>({
   queryId: { type: Number, required: true },
@@ -44,6 +48,11 @@ const DashboardFilterStaticModel =
     'static',
     staticFilterSchema,
   );
+const DashboardFilterHiddenModel =
+  DashboardFilterModel.discriminator<IDashboardFilter>(
+    'hidden',
+    hiddenFilterSchema,
+  );
 const DashboardFilterDynamicModel =
   DashboardFilterModel.discriminator<IDashboardFilter>(
     'dynamic',
@@ -58,6 +67,7 @@ const DashboardFilterDependentModel =
 export {
   DashboardFilterModel,
   DashboardFilterStaticModel,
+  DashboardFilterHiddenModel,
   DashboardFilterDynamicModel,
   DashboardFilterDependentModel,
 };

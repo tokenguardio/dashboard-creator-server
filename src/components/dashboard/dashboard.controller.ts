@@ -31,7 +31,12 @@ import {
   IDashboardElement,
   IDashboardElementCustomQuery,
 } from '@components/dashboard/dashboardElement/dashboardElement.interface';
-import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
+import {
+  IDashboardFilterValue,
+  IDashboardFilter,
+  IDashboardFilterDependent,
+  IDashboardFilterDynamic,
+} from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
 
 const { API_BASE_URL } = process.env;
 
@@ -164,15 +169,22 @@ const updateDashboardElement = async (req: Request, res: Response) => {
 const prepareQueryPayload = (
   dashboard: IDashboard,
   element: IDashboardElementCustomQuery,
-  filterValues: object[],
+  filterValues: IDashboardFilterValue[],
 ) => {
   const queryPayload: any = {
-    id: element.queryId, // Assuming queryId corresponds to the ID field in the payload
+    id: element.queryId,
     parameters: {
       values: [],
       identifiers: [],
     },
   };
+
+  // Extracting filter names from the dashboard
+  const dashboardFilterNames = dashboard.filters.map((filter) => filter.name);
+  // Filtering filterValues array based on dashboard filter names
+  const filteredFilterValues = filterValues.filter((filter) =>
+    dashboardFilterNames.includes(filter.name),
+  );
 
   const extractDateRange = (period: string) => {
     let min_date: string;
@@ -238,7 +250,7 @@ const prepareQueryPayload = (
     return { min_date, max_date };
   };
 
-  filterValues.forEach((filter: any) => {
+  filteredFilterValues.forEach((filter: any) => {
     if (filter.name === 'period') {
       const { min_date, max_date } = extractDateRange(filter.value);
       queryPayload.parameters.values.push({
@@ -354,24 +366,59 @@ const updateDashboardFilter = async (req: Request, res: Response) => {
   }
 };
 
+const prepareFilterQueryPayload = (
+  dashboard: IDashboard,
+  filter: IDashboardFilterDynamic | IDashboardFilterDependent,
+  filterValues: IDashboardFilterValue[],
+): object => {
+  const queryPayload: any = {
+    id: filter.queryId,
+    parameters: {
+      values: [],
+      identifiers: [],
+    },
+  };
+  // Extracting filter names from the filter
+  const filterNames = filter.params;
+  const filteredFilterValues = filterValues.filter((filterValue) =>
+    filterNames.includes(filterValue.name),
+  );
+  filteredFilterValues.forEach((filterValue: any) => {
+    queryPayload.parameters.values.push({
+      name: filterValue.name,
+      value: filterValue.value,
+    });
+  });
+  return queryPayload;
+};
+
 const getDashboardFilterData = async (req: Request, res: Response) => {
   try {
-    // const { dashboardId, filterId } = req.params;
-    // const filterValues = req.body.filters;
+    const { dashboardId, filterId } = req.params;
+    const filterValues = req.body.params;
 
-    // const dashboard = await read(dashboardId);
-    // const getFilter = (await getFilter(
-    //   dashboardId,
-    //   filterId,
-    // )) as IDashboardFilter;
-    // const queryPayload = prepareFilterQueryPayload(dashboard, filter, filterValues);
-    // const url = `${API_BASE_URL}/execute-query`;
-    // const response = await axios.post(url, queryPayload);
+    const dashboard = await read(dashboardId);
+    const filter = await getFilter(dashboardId, filterId);
+    // Check if the filter object has the 'queryId' property
+    if ('queryId' in filter) {
+      const queryPayload = prepareFilterQueryPayload(
+        dashboard,
+        filter as IDashboardFilterDynamic | IDashboardFilterDependent,
+        filterValues,
+      );
+      logger.info(
+        `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
+      );
+      const url = `${API_BASE_URL}/execute-query`;
+      const response = await axios.post(url, queryPayload);
 
-    res.status(httpStatus.OK).send({
-      message: 'Dashboard Element Data Retrieved',
-      // output: response.data,
-    });
+      res.status(httpStatus.OK).send({
+        message: 'Dashboard Filter Data Retrieved',
+        output: response.data,
+      });
+    } else {
+      throw new Error('Invalid filter type');
+    }
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
