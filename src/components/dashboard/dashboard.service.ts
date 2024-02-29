@@ -30,7 +30,10 @@ const read = async (id: string): Promise<IDashboard> => {
     // Populate the elements field
     const dashboard = await DashboardModel.findOne({ _id: id })
       .populate('elements')
-      .populate('filters')
+      .populate({
+        path: 'filters',
+        match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
+      })
       .populate('theme');
     if (!dashboard) {
       throw new Error(`Dashboard with id ${id} not found`);
@@ -46,7 +49,10 @@ const getAll = async (): Promise<IDashboard[]> => {
   logger.debug(`Fetching all dashboards`);
   const dashboards = await DashboardModel.find({})
     .populate('elements')
-    .populate('filters')
+    .populate({
+      path: 'filters',
+      match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
+    })
     .populate('theme');
   return dashboards as IDashboard[];
 };
