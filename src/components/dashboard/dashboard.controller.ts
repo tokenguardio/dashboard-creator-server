@@ -455,7 +455,7 @@ const getDashboardElementByQueryId = async (req: Request, res: Response) => {
 const addDashboardLayoutItem = async (req: Request, res: Response) => {
   try {
     const { dashboardId } = req.params;
-    const layoutItemData = req.body; // Assuming ILayoutItem is the type
+    const layoutItemData = req.body;
 
     await addLayoutItem(dashboardId, layoutItemData);
 
