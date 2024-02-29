@@ -81,7 +81,10 @@ const getFilter = async (
     case 'dynamic':
       return filter as IDashboardFilterDynamic;
     case 'dependent':
-      return filter as IDashboardFilterDependent;
+      const dependentFilter = await DashboardFilterModel.findById(filterId)
+        .populate('reactsTo')
+        .lean();
+      return dependentFilter as IDashboardFilterDependent;
     default:
       throw new AppError(
         httpStatus.INTERNAL_SERVER_ERROR,

@@ -1,5 +1,9 @@
 import { Document } from 'mongoose';
 
+interface IDashboardFilterOptions {
+  label: string;
+  value: any;
+}
 interface IDashboardFilterValue {
   name: string;
   value: any;
@@ -8,7 +12,7 @@ interface IDashboardFilterValue {
 interface IDashboardFilter extends Document {
   name: string;
   title: string;
-  options: string[] | null;
+  options: IDashboardFilterOptions[] | null;
   type: 'static' | 'dynamic' | 'dependent' | 'hidden';
   component: 'datePicker' | 'select' | 'multiselect' | 'checkbox' | 'radio';
   defaultValue: any;

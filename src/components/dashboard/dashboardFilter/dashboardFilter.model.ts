@@ -7,10 +7,15 @@ import {
   IDashboardFilterDependent,
 } from './dashboardFilter.interface';
 
+const optionsSchema = new mongoose.Schema({
+  label: { type: String, required: true },
+  value: { type: String, required: true },
+});
+
 const filterSchema = new mongoose.Schema<IDashboardFilter>({
   name: { type: String, required: true },
   title: { type: String, required: true },
-  options: [{ type: String }],
+  options: [optionsSchema],
   type: {
     type: String,
     enum: ['static', 'hidden', 'dynamic', 'dependent'],

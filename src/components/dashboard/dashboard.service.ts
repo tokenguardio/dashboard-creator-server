@@ -377,7 +377,7 @@ const updateFilter = async (
     if (!filterExists) {
       throw new AppError(httpStatus.NOT_FOUND, 'Filter not found in dashboard');
     }
-
+    logger.info(`FilterData: ${JSON.stringify(filterData)}`);
     await dashboardFilterService.updateFilter(filterId, filterData);
     logger.debug(`Filter updated in dashboard: %O`, filterData);
     return true;
