@@ -70,6 +70,40 @@ const getAllDashboards = async (req: Request, res: Response) => {
 const readDashboard = async (req: Request, res: Response) => {
   try {
     const dashboard = await read(req.params.id);
+    for (const filter of dashboard.filters) {
+      if ('queryId' in filter) {
+        const dynamicFilter = filter as
+          | IDashboardFilterDynamic
+          | IDashboardFilterDependent;
+        const filterValues = [];
+        if ('params' in dynamicFilter && dynamicFilter.params.length > 0) {
+          for (const param of dynamicFilter.params) {
+            filterValues.push({ name: param, value: [' '] });
+          }
+        }
+        const queryPayload = prepareFilterQueryPayload(
+          dashboard,
+          filter as IDashboardFilterDynamic | IDashboardFilterDependent,
+          filterValues,
+        );
+        logger.info(
+          `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
+        );
+        const url = `${API_BASE_URL}/execute-query`;
+        const response = await axios.post(url, queryPayload);
+        const data = await response.data;
+        logger.info(`getFilterData response: ${JSON.stringify(data)}`);
+        // Update options field if necessary
+        if (data && data.data && Array.isArray(data.data)) {
+          // Update options field if necessary
+          filter.options = data.data.map((item: any) => ({
+            label: item.value,
+            value: item.value,
+          }));
+        }
+      }
+    }
+
     res
       .status(httpStatus.OK)
       .send({ message: 'Dashboard Read', output: dashboard });

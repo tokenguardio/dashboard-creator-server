@@ -38,6 +38,7 @@ const read = async (id: string): Promise<IDashboard> => {
     if (!dashboard) {
       throw new Error(`Dashboard with id ${id} not found`);
     }
+
     return dashboard as IDashboard;
   } catch (error) {
     logger.error('Error in fetching dashboard:', error);
