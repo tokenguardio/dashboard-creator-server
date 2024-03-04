@@ -24,17 +24,28 @@ const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
   return newDashboard;
 };
 
-const read = async (id: string): Promise<IDashboard> => {
+const read = async (
+  id: string,
+  includeHiddenFilters = false as boolean,
+): Promise<IDashboard> => {
   try {
     logger.debug(`Fetching dashboard with id ${id}`);
     // Populate the elements field
-    const dashboard = await DashboardModel.findOne({ _id: id })
-      .populate('elements')
-      .populate({
-        path: 'filters',
-        match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
-      })
-      .populate('theme');
+    let dashboard: IDashboard;
+    if (includeHiddenFilters) {
+      dashboard = await DashboardModel.findOne({ _id: id })
+        .populate('elements')
+        .populate('filters')
+        .populate('theme');
+    } else {
+      dashboard = await DashboardModel.findOne({ _id: id })
+        .populate('elements')
+        .populate({
+          path: 'filters',
+          match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
+        })
+        .populate('theme');
+    }
     if (!dashboard) {
       throw new Error(`Dashboard with id ${id} not found`);
     }

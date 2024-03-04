@@ -284,6 +284,16 @@ const prepareQueryPayload = (
     return { min_date, max_date };
   };
 
+  // add default 'space' param for each missing (hidden) param
+  dashboardFilterNames.forEach((filterName) => {
+    if (!filteredFilterValues.some((filter) => filter.name === filterName)) {
+      queryPayload.parameters.values.push({
+        name: filterName,
+        value: [' '],
+      });
+    }
+  });
+
   filteredFilterValues.forEach((filter: any) => {
     if (filter.name === 'period') {
       const { min_date, max_date } = extractDateRange(filter.value);
@@ -311,14 +321,19 @@ const getDashboardElementData = async (req: Request, res: Response) => {
   try {
     const { dashboardId, elementId } = req.params;
     const filterValues = req.body.filters;
-
-    const dashboard = await read(dashboardId);
+    const includeHiddenFilters = true;
+    const dashboard = await read(dashboardId, includeHiddenFilters);
     const element = (await getElement(
       dashboardId,
       elementId,
     )) as IDashboardElementCustomQuery;
     const queryPayload = prepareQueryPayload(dashboard, element, filterValues);
     const url = `${API_BASE_URL}/execute-query`;
+    logger.info(
+      `sending queryPayload: ${JSON.stringify(
+        queryPayload,
+      )} to ${url} with POST`,
+    );
     const response = await axios.post(url, queryPayload);
 
     res.status(httpStatus.OK).send({
