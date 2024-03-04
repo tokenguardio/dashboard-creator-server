@@ -6,6 +6,7 @@ import * as dashboardElementService from '@components/dashboard/dashboardElement
 import * as dashboardFilterService from '@components/dashboard/dashboardFilter/dashboardFilter.service';
 import {
   IDashboard,
+  ILayoutItem,
   IWriteDashboard,
 } from '@components/dashboard/dashboard.interface';
 import { IDashboardElement } from '@components/dashboard/dashboardElement/dashboardElement.interface';
@@ -25,16 +26,19 @@ const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
 
 const read = async (id: string): Promise<IDashboard> => {
   try {
-    logger.debug('log id', id);
     logger.debug(`Fetching dashboard with id ${id}`);
     // Populate the elements field
     const dashboard = await DashboardModel.findOne({ _id: id })
       .populate('elements')
-      .populate('filters')
+      .populate({
+        path: 'filters',
+        match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
+      })
       .populate('theme');
     if (!dashboard) {
       throw new Error(`Dashboard with id ${id} not found`);
     }
+
     return dashboard as IDashboard;
   } catch (error) {
     logger.error('Error in fetching dashboard:', error);
@@ -46,7 +50,10 @@ const getAll = async (): Promise<IDashboard[]> => {
   logger.debug(`Fetching all dashboards`);
   const dashboards = await DashboardModel.find({})
     .populate('elements')
-    .populate('filters')
+    .populate({
+      path: 'filters',
+      match: { type: { $ne: 'hidden' } }, // Exclude filters with type 'hidden'
+    })
     .populate('theme');
   return dashboards as IDashboard[];
 };
@@ -127,8 +134,11 @@ const getElement = async (
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
 
+    dashboard.elements.forEach((element) => {
+      logger.debug(`log element, ${element.id}`);
+    });
     const element = dashboard.elements.find(
-      (element) => element.id.toString() === elementId,
+      (elt) => elt.id.toString() === elementId,
     );
 
     if (!element) {
@@ -268,14 +278,12 @@ const getFilter = async (
   try {
     const dashboard = await (
       await DashboardModel.findById(dashboardId)
-    ).populated('filters');
+    ).populate('filters');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
 
-    const filter = dashboard.filters.find(
-      (filter) => filter._id.toString() === filterId,
-    );
+    const filter = dashboard.filters.find((x) => x._id.toString() === filterId);
     if (!filter) {
       throw new AppError(httpStatus.NOT_FOUND, 'Filter not found in dashboard');
     }
@@ -285,6 +293,38 @@ const getFilter = async (
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error retrieving filter from dashboard',
+      err.message,
+    );
+  }
+};
+
+const getFilterByName = async (
+  dashboardId: string,
+  filterName: string,
+): Promise<IDashboardFilter> => {
+  try {
+    const dashboard = await DashboardModel.findById(dashboardId).populate(
+      'filters',
+    );
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    const filter = dashboard.filters.find(
+      (filterElement) => filterElement.name === filterName,
+    );
+    if (!filter) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        `Filter '${filterName}' not found in dashboard`,
+      );
+    }
+
+    return filter;
+  } catch (err) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `Error retrieving filter '${filterName}' from dashboard`,
       err.message,
     );
   }
@@ -344,7 +384,7 @@ const updateFilter = async (
     if (!filterExists) {
       throw new AppError(httpStatus.NOT_FOUND, 'Filter not found in dashboard');
     }
-
+    logger.info(`FilterData: ${JSON.stringify(filterData)}`);
     await dashboardFilterService.updateFilter(filterId, filterData);
     logger.debug(`Filter updated in dashboard: %O`, filterData);
     return true;
@@ -352,6 +392,145 @@ const updateFilter = async (
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error updating filter in dashboard',
+      err.message,
+    );
+  }
+};
+
+const getElementByQueryId = async (dashboardId: string, queryId: number) => {
+  try {
+    logger.info(
+      `Searching in dashboardId: ${dashboardId} for queryId: ${queryId}`,
+    );
+    const dashboard = await DashboardModel.findById(dashboardId).populate({
+      path: 'elements',
+      match: { type: 'basicQuery', queryId }, // Ensure to match elements of type basicQuery and the specific queryId
+    });
+
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    // Since populate with match might return an empty array if no elements are found
+    if (dashboard.elements.length === 0) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Element not found in dashboard',
+      );
+    }
+
+    const element = dashboard.elements[0]; // Assuming match returns at least one element
+    logger.debug(`Element read from dashboard ${dashboardId}: ${element}`);
+    return element;
+  } catch (err) {
+    logger.error(`Error retrieving element from dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error retrieving element from dashboard',
+      err.message,
+    );
+  }
+};
+
+const addLayoutItem = async (
+  dashboardId: string,
+  layoutItem: ILayoutItem,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    dashboard.layout.push(layoutItem);
+    await dashboard.save();
+
+    logger.info(`Layout item added to dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error adding layout item to dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error adding layout item to dashboard',
+      err.message,
+    );
+  }
+};
+
+const getLayoutItems = async (dashboardId: string): Promise<ILayoutItem[]> => {
+  try {
+    const dashboard = await DashboardModel.findById(dashboardId);
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    logger.info(`Retrieved layout items from dashboard: ${dashboardId}`);
+    return dashboard.layout;
+  } catch (err) {
+    logger.error(
+      `Error retrieving layout items from dashboard: %O`,
+      err.message,
+    );
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error retrieving layout items from dashboard',
+      err.message,
+    );
+  }
+};
+
+const updateLayoutItem = async (
+  dashboardId: string,
+  layoutItemId: string,
+  layoutItemData: ILayoutItem,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    const layoutItemIndex = dashboard.layout.findIndex(
+      (item) => item.id === layoutItemId,
+    );
+    if (layoutItemIndex === -1) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Layout item not found');
+    }
+
+    dashboard.layout[layoutItemIndex] = layoutItemData;
+    await dashboard.save();
+
+    logger.info(`Layout item updated in dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error updating layout item in dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error updating layout item in dashboard',
+      err.message,
+    );
+  }
+};
+
+const deleteLayoutItem = async (
+  dashboardId: string,
+  layoutItemId: string,
+): Promise<void> => {
+  try {
+    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    if (!dashboard) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
+    }
+
+    dashboard.layout = dashboard.layout.filter(
+      (item) => item.id !== layoutItemId,
+    );
+    await dashboard.save();
+
+    logger.info(`Layout item deleted from dashboard: ${dashboardId}`);
+  } catch (err) {
+    logger.error(`Error deleting layout item from dashboard: %O`, err.message);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error deleting layout item from dashboard',
       err.message,
     );
   }
@@ -371,4 +550,10 @@ export {
   getFilter,
   deleteFilter,
   updateFilter,
+  getElementByQueryId,
+  getFilterByName,
+  addLayoutItem,
+  getLayoutItems,
+  updateLayoutItem,
+  deleteLayoutItem,
 };

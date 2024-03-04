@@ -27,11 +27,11 @@ interface ITheme extends Document {
   bgColor: string;
   itemGridRadius: string;
   itemGridBgColor: string;
-  font: string,
-  textColor: string,
-  itemGridStroke: string,
-  chartGradient: boolean,
-  bottomTimeline: boolean
+  font: string;
+  textColor: string;
+  itemGridStroke: string;
+  chartGradient: boolean;
+  bottomTimeline: boolean;
 }
 
 interface IWriteDashboard extends Document {
@@ -40,5 +40,4 @@ interface IWriteDashboard extends Document {
   layout?: ILayoutItem[];
 }
 
-export { IDashboard, ILayoutItem, ITheme, IWriteDashboard }
-
+export { IDashboard, ILayoutItem, ITheme, IWriteDashboard };
