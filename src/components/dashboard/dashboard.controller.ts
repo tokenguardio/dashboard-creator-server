@@ -14,8 +14,14 @@ import {
   updateElementInDashboard,
   addFilter,
   getFilter,
+  getFilterByName,
   deleteFilter,
   updateFilter,
+  getElementByQueryId,
+  addLayoutItem,
+  getLayoutItems,
+  updateLayoutItem,
+  deleteLayoutItem,
 } from '@components/dashboard/dashboard.service';
 import {
   IDashboard,
@@ -25,7 +31,12 @@ import {
   IDashboardElement,
   IDashboardElementCustomQuery,
 } from '@components/dashboard/dashboardElement/dashboardElement.interface';
-import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
+import {
+  IDashboardFilterValue,
+  IDashboardFilter,
+  IDashboardFilterDependent,
+  IDashboardFilterDynamic,
+} from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
 
 const { API_BASE_URL } = process.env;
 
@@ -33,6 +44,7 @@ const createDashboard = async (req: Request, res: Response) => {
   try {
     const dashboardData = req.body as IWriteDashboard;
     const createdDashboard = await create(dashboardData);
+    logger.debug(`log dashboardData, ${dashboardData}`);
 
     res.status(httpStatus.CREATED).send({
       message: 'Dashboard Created',
@@ -42,6 +54,7 @@ const createDashboard = async (req: Request, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
 };
+//
 
 const getAllDashboards = async (req: Request, res: Response) => {
   try {
@@ -57,6 +70,40 @@ const getAllDashboards = async (req: Request, res: Response) => {
 const readDashboard = async (req: Request, res: Response) => {
   try {
     const dashboard = await read(req.params.id);
+    for (const filter of dashboard.filters) {
+      if ('queryId' in filter) {
+        const dynamicFilter = filter as
+          | IDashboardFilterDynamic
+          | IDashboardFilterDependent;
+        const filterValues = [];
+        if ('params' in dynamicFilter && dynamicFilter.params.length > 0) {
+          for (const param of dynamicFilter.params) {
+            filterValues.push({ name: param, value: [' '] });
+          }
+        }
+        const queryPayload = prepareFilterQueryPayload(
+          dashboard,
+          filter as IDashboardFilterDynamic | IDashboardFilterDependent,
+          filterValues,
+        );
+        logger.info(
+          `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
+        );
+        const url = `${API_BASE_URL}/execute-query`;
+        const response = await axios.post(url, queryPayload);
+        const data = await response.data;
+        logger.info(`getFilterData response: ${JSON.stringify(data)}`);
+        // Update options field if necessary
+        if (data && data.data && Array.isArray(data.data)) {
+          // Update options field if necessary
+          filter.options = data.data.map((item: any) => ({
+            label: item.value,
+            value: item.value,
+          }));
+        }
+      }
+    }
+
     res
       .status(httpStatus.OK)
       .send({ message: 'Dashboard Read', output: dashboard });
@@ -101,6 +148,8 @@ const addDashboardElement = async (req: Request, res: Response) => {
   try {
     const { dashboardId } = req.params;
     const elementData = req.body as IDashboardElement;
+    logger.debug(`elementData ${JSON.stringify(elementData)}`);
+    logger.debug(`dashboardId ${dashboardId}`);
 
     const newElement = await addElement(dashboardId, elementData);
 
@@ -154,15 +203,22 @@ const updateDashboardElement = async (req: Request, res: Response) => {
 const prepareQueryPayload = (
   dashboard: IDashboard,
   element: IDashboardElementCustomQuery,
-  filterValues: object[],
+  filterValues: IDashboardFilterValue[],
 ) => {
   const queryPayload: any = {
-    id: element.queryId, // Assuming queryId corresponds to the ID field in the payload
+    id: element.queryId,
     parameters: {
       values: [],
       identifiers: [],
     },
   };
+
+  // Extracting filter names from the dashboard
+  const dashboardFilterNames = dashboard.filters.map((filter) => filter.name);
+  // Filtering filterValues array based on dashboard filter names
+  const filteredFilterValues = filterValues.filter((filter) =>
+    dashboardFilterNames.includes(filter.name),
+  );
 
   const extractDateRange = (period: string) => {
     let min_date: string;
@@ -228,7 +284,17 @@ const prepareQueryPayload = (
     return { min_date, max_date };
   };
 
-  filterValues.forEach((filter: any) => {
+  // add default 'space' param for each missing (hidden) param
+  dashboardFilterNames.forEach((filterName) => {
+    if (!filteredFilterValues.some((filter) => filter.name === filterName)) {
+      queryPayload.parameters.values.push({
+        name: filterName,
+        value: [' '],
+      });
+    }
+  });
+
+  filteredFilterValues.forEach((filter: any) => {
     if (filter.name === 'period') {
       const { min_date, max_date } = extractDateRange(filter.value);
       queryPayload.parameters.values.push({
@@ -255,14 +321,19 @@ const getDashboardElementData = async (req: Request, res: Response) => {
   try {
     const { dashboardId, elementId } = req.params;
     const filterValues = req.body.filters;
-
-    const dashboard = await read(dashboardId);
+    const includeHiddenFilters = true;
+    const dashboard = await read(dashboardId, includeHiddenFilters);
     const element = (await getElement(
       dashboardId,
       elementId,
     )) as IDashboardElementCustomQuery;
     const queryPayload = prepareQueryPayload(dashboard, element, filterValues);
     const url = `${API_BASE_URL}/execute-query`;
+    logger.info(
+      `sending queryPayload: ${JSON.stringify(
+        queryPayload,
+      )} to ${url} with POST`,
+    );
     const response = await axios.post(url, queryPayload);
 
     res.status(httpStatus.OK).send({
@@ -298,7 +369,22 @@ const getDashboardFilter = async (req: Request, res: Response) => {
 
     res.status(httpStatus.OK).json(filter);
   } catch (err) {
-    console.error(`Error retrieving dashboard filter: ${err.message}`);
+    logger.error(`Error retrieving dashboard filter: ${err.message}`);
+    res
+      .status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: err.message });
+  }
+};
+
+const getDashboardFilterByName = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, filterName } = req.params;
+
+    const filter = await getFilterByName(dashboardId, filterName);
+
+    res.status(httpStatus.OK).json(filter);
+  } catch (err) {
+    logger.error(`Error retrieving dashboard filter by name: ${err.message}`);
     res
       .status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: err.message });
@@ -329,23 +415,146 @@ const updateDashboardFilter = async (req: Request, res: Response) => {
   }
 };
 
+const prepareFilterQueryPayload = (
+  dashboard: IDashboard,
+  filter: IDashboardFilterDynamic | IDashboardFilterDependent,
+  filterValues: IDashboardFilterValue[],
+): object => {
+  const queryPayload: any = {
+    id: filter.queryId,
+    parameters: {
+      values: [],
+      identifiers: [],
+    },
+  };
+  // Extracting filter names from the filter
+  const filterNames = filter.params;
+  const filteredFilterValues = filterValues.filter((filterValue) =>
+    filterNames.includes(filterValue.name),
+  );
+  filteredFilterValues.forEach((filterValue: any) => {
+    queryPayload.parameters.values.push({
+      name: filterValue.name,
+      value: filterValue.value,
+    });
+  });
+  return queryPayload;
+};
+
 const getDashboardFilterData = async (req: Request, res: Response) => {
   try {
-    // const { dashboardId, filterId } = req.params;
-    // const filterValues = req.body.filters;
+    const { dashboardId, filterId } = req.params;
+    const filterValues = req.body.params;
 
-    // const dashboard = await read(dashboardId);
-    // const getFilter = (await getFilter(
-    //   dashboardId,
-    //   filterId,
-    // )) as IDashboardFilter;
-    // const queryPayload = prepareFilterQueryPayload(dashboard, filter, filterValues);
-    // const url = `${API_BASE_URL}/execute-query`;
-    // const response = await axios.post(url, queryPayload);
+    const dashboard = await read(dashboardId);
+    const filter = await getFilter(dashboardId, filterId);
+    // Check if the filter object has the 'queryId' property
+    if ('queryId' in filter) {
+      const queryPayload = prepareFilterQueryPayload(
+        dashboard,
+        filter as IDashboardFilterDynamic | IDashboardFilterDependent,
+        filterValues,
+      );
+      logger.info(
+        `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
+      );
+      const url = `${API_BASE_URL}/execute-query`;
+      const response = await axios.post(url, queryPayload);
+
+      res.status(httpStatus.OK).send({
+        message: 'Dashboard Filter Data Retrieved',
+        output: response.data,
+      });
+    } else {
+      throw new Error('Invalid filter type');
+    }
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const getDashboardElementByQueryId = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const { queryId } = req.body;
+
+    logger.info(
+      `Searching in dashboardId: ${dashboardId} for queryId: ${queryId}`,
+    );
+
+    const element = await getElementByQueryId(dashboardId, Number(queryId));
+
+    if (!element) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .send({ message: 'Element not found' });
+    }
+
+    res
+      .status(httpStatus.OK)
+      .send({ message: 'Element Retrieved', output: element });
+  } catch (err) {
+    logger.error(`Error retrieving element: %O`, err);
+    res
+      .status(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR)
+      .send({ message: err.message });
+  }
+};
+
+const addDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const layoutItemData = req.body;
+
+    await addLayoutItem(dashboardId, layoutItemData);
+
+    res.status(httpStatus.CREATED).send({
+      message: 'Layout Item Added to Dashboard',
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const getDashboardLayoutItems = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+
+    const layoutItems = await getLayoutItems(dashboardId);
 
     res.status(httpStatus.OK).send({
-      message: 'Dashboard Element Data Retrieved',
-      // output: response.data,
+      message: 'Layout Items retrieved',
+      output: layoutItems,
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const updateDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId } = req.params;
+    const layoutItemId = req.body.id; // Assuming the client sends the layout item's ID in the body
+    const layoutItemData = req.body; // The rest of the body is the layout item data
+
+    await updateLayoutItem(dashboardId, layoutItemId, layoutItemData);
+
+    res.status(httpStatus.OK).send({
+      message: 'Layout Item Updated in Dashboard',
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
+  }
+};
+
+const deleteDashboardLayoutItem = async (req: Request, res: Response) => {
+  try {
+    const { dashboardId, layoutItemId } = req.params;
+
+    await deleteLayoutItem(dashboardId, layoutItemId);
+
+    res.status(httpStatus.ACCEPTED).send({
+      message: 'Layout Item Removed from Dashboard',
     });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -365,7 +574,13 @@ export {
   getAllDashboards,
   addDashboardFilter,
   getDashboardFilter,
+  getDashboardFilterByName,
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,
+  getDashboardElementByQueryId,
+  addDashboardLayoutItem,
+  getDashboardLayoutItems,
+  updateDashboardLayoutItem,
+  deleteDashboardLayoutItem,
 };

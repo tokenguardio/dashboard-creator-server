@@ -624,7 +624,7 @@
         },
         "type": {
           "type": "string",
-          "enum": ["static", "dynamic", "dependent"]
+          "enum": ["static", "dynamic", "dependent", "hidden"]
         },
         "component": {
           "type": "string",
@@ -650,7 +650,7 @@
         },
         "type": {
           "type": "string",
-          "enum": ["static", "dynamic", "dependent"]
+          "enum": ["static", "dynamic", "dependent", "hidden"]
         },
         "component": {
           "type": "string",

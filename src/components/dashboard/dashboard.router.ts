@@ -13,9 +13,15 @@ import {
   getDashboardElementData,
   addDashboardFilter,
   getDashboardFilter,
+  getDashboardFilterByName,
   deleteDashboardFilter,
   updateDashboardFilter,
   getDashboardFilterData,
+  getDashboardElementByQueryId,
+  addDashboardLayoutItem,
+  getDashboardLayoutItems,
+  updateDashboardLayoutItem,
+  deleteDashboardLayoutItem,
 } from './dashboard.controller';
 // Import any necessary validations for dashboard and dashboard elements
 
@@ -38,15 +44,22 @@ router.put(
   '/dashboard/:dashboardId/element/:elementId',
   updateDashboardElement,
 );
-
 router.post(
   '/dashboard/:dashboardId/element/:elementId/exec',
   getDashboardElementData,
+);
+router.get(
+  '/dashboard/:dashboardId/element/query/:queryId',
+  getDashboardElementByQueryId,
 );
 
 // Filters
 router.post('/dashboard/:dashboardId/filter', addDashboardFilter);
 router.get('/dashboard/:dashboardId/filter/:filterId', getDashboardFilter);
+router.get(
+  '/dashboard/:dashboardId/filterByName/:filterName',
+  getDashboardFilterByName,
+);
 router.delete(
   '/dashboard/:dashboardId/filter/:filterId',
   deleteDashboardFilter,
@@ -56,6 +69,18 @@ router.put('/dashboard/:dashboardId/filter/:filterId', updateDashboardFilter);
 router.post(
   '/dashboard/:dashboardId/filter/:filterId/exec',
   getDashboardFilterData,
+);
+
+// Layouts
+router.post('/dashboard/:dashboardId/layout', addDashboardLayoutItem);
+router.get('/dashboard/:dashboardId/layout', getDashboardLayoutItems);
+router.put(
+  '/dashboard/:dashboardId/layout/:layoutItemId',
+  updateDashboardLayoutItem,
+);
+router.delete(
+  '/dashboard/:dashboardId/layout/:layoutItemId',
+  deleteDashboardLayoutItem,
 );
 
 export default router;
