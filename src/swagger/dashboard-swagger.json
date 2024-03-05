@@ -422,6 +422,136 @@
           }
         }
       }
+    },
+    "/api/dashboard/{dashboardId}/layout": {
+      "post": {
+        "tags": ["Dashboard"],
+        "summary": "Add a layout item to a specific dashboard",
+        "description": "Endpoint for adding a layout item to a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "description": "Unique ID of the dashboard",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "layoutItemData",
+            "description": "Layout item data to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LayoutItemInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Layout item added to dashboard"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get layout items from a specific dashboard",
+        "description": "Endpoint for retrieving all layout items from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "description": "Unique ID of the dashboard",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of layout items retrieved",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LayoutItem"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/{dashboardId}/layout/{layoutItemId}": {
+      "put": {
+        "tags": ["Dashboard"],
+        "summary": "Update a layout item in a specific dashboard",
+        "description": "Endpoint for updating a layout item in a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "description": "Unique ID of the dashboard",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "layoutItemId",
+            "in": "path",
+            "description": "Unique ID of the layout item to update",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "layoutItemData",
+            "description": "Updated layout item data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LayoutItemInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Layout item updated in dashboard"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Dashboard"],
+        "summary": "Remove a layout item from a specific dashboard",
+        "description": "Endpoint for removing a layout item from a specific dashboard by its ID.",
+        "parameters": [
+          {
+            "name": "dashboardId",
+            "in": "path",
+            "description": "Unique ID of the dashboard",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "layoutItemId",
+            "in": "path",
+            "description": "Unique ID of the layout item to remove",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Layout item removed from dashboard"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -655,6 +785,59 @@
         "component": {
           "type": "string",
           "enum": ["date_picker", "select", "multiselect", "checkbox", "radio"]
+        }
+      }
+    },
+    "LayoutItem": {
+      "type": "object",
+      "required": ["elementId", "x", "y", "w", "h"],
+      "properties": {
+        "elementId": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        },
+        "h": {
+          "type": "number"
+        },
+        "static": {
+          "type": "boolean"
+        }
+      }
+    },
+    "LayoutItemInput": {
+      "type": "object",
+      "properties": {
+        "elementId": {
+          "type": "string",
+          "description": "Unique ID of the element associated with this layout item (if applicable)"
+        },
+        "x": {
+          "type": "number",
+          "description": "The x coordinate of the layout item on the dashboard grid"
+        },
+        "y": {
+          "type": "number",
+          "description": "The y coordinate of the layout item on the dashboard grid"
+        },
+        "w": {
+          "type": "number",
+          "description": "The width of the layout item on the dashboard grid"
+        },
+        "h": {
+          "type": "number",
+          "description": "The height of the layout item on the dashboard grid"
+        },
+        "static": {
+          "type": "boolean",
+          "description": "Indicates whether the layout item is static (not movable or resizable)"
         }
       }
     }
