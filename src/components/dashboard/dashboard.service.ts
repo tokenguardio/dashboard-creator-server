@@ -84,18 +84,68 @@ const getAll = async (): Promise<IDashboard[]> => {
 
 const update = async (
   dashboardId: string,
-  dashboard: IWriteDashboard,
+  dashboardData: IWriteDashboard,
 ): Promise<IDashboard> => {
-  logger.debug('log dashboard', dashboard);
-  const updatedDashboard = await DashboardModel.findOneAndUpdate(
-    { _id: dashboardId },
-    dashboard,
+  // Read existing dashboard data from the database
+  const existingDashboard = await read(dashboardId);
+
+  if (!existingDashboard) {
+    throw new Error('Dashboard not found');
+  }
+
+  const updatedElementsIds = await Promise.all(
+    dashboardData.elements.map(async (element) => {
+      logger.info(`${element.id}`);
+      const existingElement = existingDashboard.elements.find(
+        (el) => el.id === element.id,
+      );
+
+      if (existingElement) {
+        await dashboardElementService.updateDashboardElement(
+          existingElement._id,
+          element,
+        );
+        return existingElement._id; // Return the ID of existing element
+      } else {
+        const newElement = await dashboardElementService.createDashboardElement(
+          element,
+        );
+        return newElement._id; // Return the ID of newly created element
+      }
+    }),
+  );
+
+  // Remove missing elements
+  const removedElementsIds = existingDashboard.elements
+    .filter(
+      (element) =>
+        !dashboardData.elements.some(
+          (reqElement) => reqElement.id === element.id,
+        ),
+    )
+    .map((element) => element._id);
+
+  await Promise.all(
+    removedElementsIds.map(async (elementId) => {
+      await dashboardElementService.deleteDashboardElement(elementId);
+      return elementId; // Return the ID of removed element
+    }),
+  );
+
+  logger.info(`removedElementsIds ${removedElementsIds}`);
+  logger.info(`updatedElementsIds ${updatedElementsIds}`);
+  // Update the dashboard
+  const updatedDashboard = await DashboardModel.findByIdAndUpdate(
+    dashboardId,
+    {
+      ...dashboardData,
+      elements: updatedElementsIds,
+    },
     { new: true },
   );
-  logger.debug(`log updatedDashboard', ${updatedDashboard}`);
 
   if (!updatedDashboard) {
-    throw new Error('Dashboard not found');
+    throw new Error('Failed to update dashboard');
   }
 
   logger.debug(`Dashboard updated: %O`, updatedDashboard);
