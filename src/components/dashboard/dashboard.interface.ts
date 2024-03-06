@@ -38,6 +38,7 @@ interface IWriteDashboard extends Document {
   title?: string;
   theme?: ITheme;
   layout?: ILayoutItem[];
+  elements?: IDashboardElement[];
 }
 
 export { IDashboard, ILayoutItem, ITheme, IWriteDashboard };

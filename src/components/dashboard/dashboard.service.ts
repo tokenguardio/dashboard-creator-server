@@ -13,15 +13,28 @@ import { IDashboardElement } from '@components/dashboard/dashboardElement/dashbo
 import { IDashboardFilter } from './dashboardFilter/dashboardFilter.interface';
 
 const create = async (dashboardData: IWriteDashboard): Promise<IDashboard> => {
-  logger.info(`creating dashboard with data ${JSON.stringify(dashboardData)}`);
-  const newDashboard = await DashboardModel.create({
-    elements: [],
-    layout: [],
-    filters: [],
-    ...dashboardData,
-  });
-  logger.info(`Dashboard created: %O`, newDashboard);
-  return newDashboard;
+  logger.info(`Creating dashboard with data: ${JSON.stringify(dashboardData)}`);
+
+  try {
+    const elementIds = await Promise.all(
+      dashboardData.elements.map(async (element) => {
+        const createdElement =
+          await dashboardElementService.createDashboardElement(element);
+        return createdElement._id;
+      }),
+    );
+
+    const newDashboard = await DashboardModel.create({
+      ...dashboardData,
+      elements: elementIds,
+    });
+
+    logger.info(`Dashboard created successfully: %O`, newDashboard);
+    return newDashboard;
+  } catch (error) {
+    logger.error(`Error creating dashboard: %O`, error);
+    throw error;
+  }
 };
 
 const read = async (

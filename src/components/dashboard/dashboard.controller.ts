@@ -54,7 +54,6 @@ const createDashboard = async (req: Request, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: err.message });
   }
 };
-//
 
 const getAllDashboards = async (req: Request, res: Response) => {
   try {
