@@ -3,8 +3,9 @@ import { ValidSchema } from '../../middleware/joiValidate';
 
 export const getTableColumnsValidation: ValidSchema = {
   params: Joi.object({
-    schemaName: Joi.string().required(),
-    tableName: Joi.string().required(),
+    dbname: Joi.string().required(),
+    schema: Joi.string().required(),
+    table: Joi.string().required(),
   }),
 };
 
@@ -28,6 +29,7 @@ const filterColumnSchema = Joi.object({
 
 export const generateChartDataValidation: ValidSchema = {
   params: Joi.object({
+    dbname: Joi.string().required(),
     schema: Joi.string().required(),
     table: Joi.string().required(),
   }),
