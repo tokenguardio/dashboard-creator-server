@@ -36,6 +36,9 @@ export interface IDashboardElementBasicQueryMeasure {
 
 export interface IDashboardElementBasicQuery extends IDashboardElementVis {
   type: 'basicQuery';
+  dbname: string;
+  schema: string;
+  table: string;
   dimension: string;
   differential?: string;
   measures: IDashboardElementBasicQueryMeasure[];
