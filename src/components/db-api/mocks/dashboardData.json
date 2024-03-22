@@ -39,6 +39,7 @@
       }
     ]
   },
+  "dbname": "db1",
   "schema_name": "public",
   "table_name": "tokens_dict"
 }

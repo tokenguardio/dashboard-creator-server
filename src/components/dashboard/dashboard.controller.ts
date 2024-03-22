@@ -44,7 +44,6 @@ const createDashboard = async (req: Request, res: Response) => {
   try {
     const dashboardData = req.body as IWriteDashboard;
     const createdDashboard = await create(dashboardData);
-    logger.debug(`log dashboardData, ${dashboardData}`);
 
     res.status(httpStatus.CREATED).send({
       message: 'Dashboard Created',

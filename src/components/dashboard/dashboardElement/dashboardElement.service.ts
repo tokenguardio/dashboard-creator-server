@@ -106,7 +106,7 @@ const updateDashboardElement = async (
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard element not found');
     }
 
-    switch (elementData.type) {
+    switch (elementData.type || existingElement.type) {
       case 'button':
         await DashboardElementButtonModel.findByIdAndUpdate(
           elementId,
