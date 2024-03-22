@@ -23,10 +23,10 @@ describe('Database Data API', () => {
     });
   });
 
-  describe('GET /api/schemas', () => {
+  describe('GET /api/:dbname/schemas', () => {
     test('should return 200 status and a list of schemas', async () => {
       mockedAxios.get.mockResolvedValueOnce({ data: mockData.schemas });
-      const res = await request(app).get('/api/database-info/schemas');
+      const res = await request(app).get(`/api/database-info/${mockData.dbname}/schemas`);
 
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
@@ -37,7 +37,9 @@ describe('Database Data API', () => {
   describe('GET /api/tables', () => {
     test('should return 200 status and a list of tables', async () => {
       mockedAxios.get.mockResolvedValueOnce({ data: mockData.tables });
-      const res = await request(app).get('/api/database-info/tables');
+      const res = await request(app).get(
+        `/api/database-info/${mockData.dbname}/tables`,
+      );
 
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
@@ -46,11 +48,11 @@ describe('Database Data API', () => {
     });
   });
 
-  describe('GET /api/tables/:schemaName/:tableName/columns', () => {
+  describe('GET /api/:dbname/tables/:schemaName/:tableName/columns', () => {
     test('should return 200 status and a list of columns for a specific table', async () => {
       mockedAxios.get.mockResolvedValueOnce({ data: mockData.columns.request });
       const res = await request(app).get(
-        `/api/database-info/tables/${mockData.schema_name}/${mockData.table_name}/columns`,
+        `/api/database-info/${mockData.dbname}/tables/${mockData.schema_name}/${mockData.table_name}/columns`,
       );
       expect(res.status).toBe(httpStatus.OK);
       expect(res.body).toHaveProperty('data');
@@ -59,14 +61,14 @@ describe('Database Data API', () => {
     });
   });
 
-  describe('POST /api/database-info/generate-chart-data', () => {
+  describe('POST /api/database-info/generate-chart-data/db1/public/market_data', () => {
     test('should handle request with one measure', async () => {
       const payload = {
         dimension: 'timestamp',
-        measures: JSON.stringify([
+        measures: [
           { columnName: 'market_cap', operator: 'SUM' },
-        ]),
-        filters: JSON.stringify([
+        ],
+        filters: [
           {
             columnName: 'timestamp',
             filterValue: {
@@ -74,14 +76,14 @@ describe('Database Data API', () => {
               end: '2023-06-29 00:00:00',
             },
           },
-        ]),
+        ],
       };
 
       mockedAxios.post.mockResolvedValueOnce({
         data: queryResponses.responseForOneMeasure,
       });
       const res = await request(app)
-        .post('/api/database-info/generate-chart-data/public/market_data')
+        .post('/api/database-info/generate-chart-data/db1/public/market_data')
         .send(payload);
 
       expect(res.status).toBe(httpStatus.OK);
@@ -91,11 +93,11 @@ describe('Database Data API', () => {
     test('should handle request with two measures', async () => {
       const payload = {
         dimension: 'timestamp',
-        measures: JSON.stringify([
+        measures: [
           { columnName: 'price', operator: 'AVG' },
           { columnName: 'market_cap', operator: 'SUM' },
-        ]),
-        filters: JSON.stringify([
+        ],
+        filters: [
           {
             columnName: 'timestamp',
             filterValue: {
@@ -103,14 +105,14 @@ describe('Database Data API', () => {
               end: '2023-06-29 00:00:00',
             },
           },
-        ]),
+        ],
       };
 
       mockedAxios.post.mockResolvedValueOnce({
         data: queryResponses.responseForTwoMeasures,
       });
       const res = await request(app)
-        .post('/api/database-info/generate-chart-data/public/market_data')
+        .post('/api/database-info/generate-chart-data/db1/public/market_data')
         .send(payload);
 
       expect(res.status).toBe(httpStatus.OK);
@@ -120,10 +122,10 @@ describe('Database Data API', () => {
     test('should handle request with differential', async () => {
       const payload = {
         dimension: 'timestamp',
-        measures: JSON.stringify([
+        measures: [
           { columnName: 'market_cap', operator: 'SUM' },
-        ]),
-        filters: JSON.stringify([
+        ],
+        filters: [
           {
             columnName: 'timestamp',
             filterValue: {
@@ -131,7 +133,7 @@ describe('Database Data API', () => {
               end: '2023-06-29 00:00:00',
             },
           },
-        ]),
+        ],
         differential: 'ticker',
       };
 
@@ -139,7 +141,7 @@ describe('Database Data API', () => {
         data: queryResponses.responseForDifferential,
       });
       const res = await request(app)
-        .post('/api/database-info/generate-chart-data/public/market_data')
+        .post('/api/database-info/generate-chart-data/db1/public/market_data')
         .send(payload);
 
       expect(res.status).toBe(httpStatus.OK);

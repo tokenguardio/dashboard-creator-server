@@ -9,8 +9,9 @@ describe('Dashboard Tests', () => {
 
   beforeEach(async () => {
     await mongoose.disconnect();
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
+    mongoServer = new MongoMemoryServer();
+    await mongoServer.start();
+    const mongoUri = await mongoServer.getUri();
     await mongoose.connect(mongoUri);
   });
 
@@ -274,7 +275,13 @@ describe('Dashboard Tests', () => {
           title: 'New Element',
           dimension: 'Dimension Value',
           differential: 'Differential Value',
-          measures: ['Measure1', 'Measure2'],
+          measures: [
+            { columnName: 'price', operator: 'AVG' },
+            { columnName: 'market_cap', operator: 'SUM' },
+          ],
+          type: 'basicQuery',
+          visType: 'barchart',
+          id: 'id1',
         };
 
         const res = await request(app)
@@ -340,7 +347,13 @@ describe('Dashboard Tests', () => {
           title: 'New Element',
           dimension: 'Dimension Value',
           differential: 'Differential Value',
-          measures: ['Measure1', 'Measure2'],
+          measures: [
+            { columnName: 'price', operator: 'AVG' },
+            { columnName: 'market_cap', operator: 'SUM' },
+          ],
+          type: 'basicQuery',
+          visType: 'barchart',
+          id: 'id1',
         };
 
         const res = await request(app)
@@ -406,7 +419,13 @@ describe('Dashboard Tests', () => {
           title: 'New Element',
           dimension: 'Dimension Value',
           differential: 'Differential Value',
-          measures: ['Measure1', 'Measure2'],
+          measures: [
+            { columnName: 'price', operator: 'AVG' },
+            { columnName: 'market_cap', operator: 'SUM' },
+          ],
+          type: 'basicQuery',
+          visType: 'barchart',
+          id: 'id1',
         };
 
         const res = await request(app)
