@@ -15,15 +15,15 @@ import {
 const router: Router = Router();
 
 router.get('/database-info/databases', getAllDatabases);
-router.get('/database-info/schemas', getAllSchemas);
-router.get('/database-info/tables', getAllTables);
+router.get('/database-info/:dbname/schemas', getAllSchemas);
+router.get('/database-info/:dbname/tables', getAllTables);
 router.get(
-  '/database-info/tables/:schemaName/:tableName/columns',
+  '/database-info/:dbname/tables/:schema/:table/columns',
   validate(getTableColumnsValidation),
   getTableColumns,
 );
 router.post(
-  '/database-info/generate-chart-data/:schema/:table',
+  '/database-info/generate-chart-data/:dbname/:schema/:table',
   validate(generateChartDataValidation),
   generateChartData,
 );

@@ -29,11 +29,19 @@ export interface IDashboardElementVis extends IDashboardElement {
     | 'pieChart';
 }
 
+export interface IDashboardElementBasicQueryMeasure {
+  columnName: string;
+  operator: string;
+}
+
 export interface IDashboardElementBasicQuery extends IDashboardElementVis {
   type: 'basicQuery';
+  dbname: string;
+  schema: string;
+  table: string;
   dimension: string;
   differential?: string;
-  measures: string[];
+  measures: IDashboardElementBasicQueryMeasure[];
 }
 
 export interface IDashboardElementCustomQuery extends IDashboardElementVis {

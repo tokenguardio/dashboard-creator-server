@@ -28,9 +28,17 @@ const dashboardElementButtonSchema =
 
 const dashboardElementBasicQuerySchema =
   new mongoose.Schema<IDashboardElementBasicQuery>({
+    dbname: { type: String },
+    schema: { type: String },
+    table: { type: String },
     dimension: { type: String },
     differential: { type: String },
-    measures: [{ type: String }],
+    measures: [
+      {
+        columnName: { type: String },
+        operator: { type: String },
+      },
+    ],
     visType: { type: String, required: true },
   });
 

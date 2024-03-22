@@ -20,7 +20,10 @@ export const getAllDatabases = async (req: Request, res: Response) => {
 
 export const getAllSchemas = async (req: Request, res: Response) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/schemas`);
+    const { dbname } = req.params;
+    const response = await axios.get(
+      `${API_BASE_URL}/database/${encodeURIComponent(dbname)}/schemas`,
+    );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching schemas:', error);
@@ -32,7 +35,10 @@ export const getAllSchemas = async (req: Request, res: Response) => {
 
 export const getAllTables = async (req: Request, res: Response) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/tables`);
+    const { dbname } = req.params;
+    const response = await axios.get(
+      `${API_BASE_URL}/database/${encodeURIComponent(dbname)}/tables`,
+    );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     console.error('Error fetching tables:', error);
@@ -44,11 +50,13 @@ export const getAllTables = async (req: Request, res: Response) => {
 
 export const getTableColumns = async (req: Request, res: Response) => {
   try {
-    const { schemaName, tableName } = req.params;
+    const { dbname, schema, table } = req.params;
     const response = await axios.get(
-      `${API_BASE_URL}/tables/${encodeURIComponent(
-        schemaName,
-      )}/${encodeURIComponent(tableName)}/columns`,
+      `${API_BASE_URL}/database/${encodeURIComponent(
+        dbname,
+      )}/tables/${encodeURIComponent(schema)}/${encodeURIComponent(
+        table,
+      )}/columns`,
     );
 
     const processedColumns = response.data.map((column) => {
@@ -89,7 +97,7 @@ export const getTableColumns = async (req: Request, res: Response) => {
 
 export const generateChartData = async (req: Request, res: Response) => {
   try {
-    const { schema, table } = req.params;
+    const { dbname, schema, table } = req.params;
     const { dimension, measures, differential, filters } = req.body;
 
     logger.debug('measures', measures);
@@ -107,7 +115,9 @@ export const generateChartData = async (req: Request, res: Response) => {
       parsedFilters,
     });
 
-    const url = `${API_BASE_URL}/group-by-operation/${schema}/${table}`;
+    const url = `${API_BASE_URL}/group-by-operation/${encodeURIComponent(
+      dbname,
+    )}/${encodeURIComponent(schema)}/${encodeURIComponent(table)}`;
     const response = await axios.post(url, payload);
 
     const mappedData = chartDataGenerator.formatChartDataResponse(
