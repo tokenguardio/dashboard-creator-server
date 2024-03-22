@@ -2,7 +2,7 @@
 
 #### Tokenguard Dashboard Builder - Server
 
-Welcome to the Tokenguard Dashboard Builder Server repository! This repository contains the backend implementation of our dashboard builder tool for data analytics. The server-side application provides APIs for connecting frontend visualizations with underlying data, saving and modifying visualization-related data, and managing user dashboards. This tool is under constant development and its initial version was delivered thanks to Web3 Foundation [grant](https://grants.web3.foundation/applications/Tokenguard)
+Welcome to the [Tokenguard](https://app.tokenguard.io) Dashboard Builder Server repository! This repository contains the backend implementation of our dashboard builder tool for data analytics. The server-side application provides APIs for connecting frontend visualizations with underlying data, saving and modifying visualization-related data, and managing user dashboards. This tool is under constant development and its initial version was delivered thanks to Web3 Foundation [grant](https://grants.web3.foundation/applications/Tokenguard)
 
 ### Getting Started
 
