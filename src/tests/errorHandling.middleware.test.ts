@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import { Response } from 'express';
 
 import errorHandler from '@core/utils/errorHandler';
-import errorHandling from './errorHandling.middleware';
+import errorHandling from '../core/middlewares/errorHandling.middleware';
 
 describe('Error middleware', () => {
   test('should delegate error to the centralized error handler and send 500 response', () => {

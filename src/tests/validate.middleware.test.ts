@@ -5,7 +5,7 @@ import { Response, Request } from 'express';
 import Joi from 'joi';
 import { ValidationSchema } from '@core/interfaces/validationSchema';
 import AppError from '@core/utils/appError';
-import validate from './validate.middleware';
+import validate from '../core/middlewares/validate.middleware';
 
 // example validation schema for node request with provided all three options to valid
 const validationSchemaWithAllOptions: ValidationSchema = {

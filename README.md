@@ -10,7 +10,10 @@ To get started with the dashboard builder server, follow these steps:
 
 1. **Clone the Repository**: `git clone https://github.com/tokenguardio/dashboard-creator-server.git`
 2. **Install Dependencies**: `npm install` or `yarn install`
-3. **Run the Development Server**: `npm start` or `yarn start`
+3. **Run the Development Server**: `npm start` or `yarn start`  
+
+### Testing
+1. **Run tests**: `npm test`
 
 ### Features
 

@@ -4,8 +4,8 @@ import httpStatus from 'http-status';
 import { jest } from '@jest/globals';
 import app from '@app';
 
-import mockData from './mocks/dashboardData.json';
-import queryResponses from './mocks/queryResponses.json';
+import mockData from '../components/db-api/mocks/dashboardData.json';
+import queryResponses from '../components/db-api/mocks/queryResponses.json';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

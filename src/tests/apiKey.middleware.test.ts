@@ -2,7 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { Response, Request, NextFunction } from 'express';
 
 import config from '@config/config';
-import apiKey from './apiKey.middleware';
+import apiKey from '../core/middlewares/apiKey.middleware';
 
 describe('ApiKey middleware', () => {
   test('should call next middleware in the stack if provided correct api key in the headers', () => {
