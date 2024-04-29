@@ -3,10 +3,12 @@ import app from '@app';
 import config from '@config/config';
 import logger from '@core/utils/logger';
 import errorHandler from 'core/utils/errorHandler';
+import db from '@db';
 
 const { port } = config;
 
-const server: Server = app.listen(port, (): void => {
+const server: Server = app.listen(port, async (): Promise<void> => {
+  await db.connect();
   logger.info(`Aapplication listens on PORT: ${port}`);
 });
 
