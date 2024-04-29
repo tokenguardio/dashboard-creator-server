@@ -13,6 +13,7 @@ To get started with the dashboard builder server, follow these steps:
 3. **Run the Development Server**: `npm start` or `yarn start`  
 
 ### Testing
+1. **set env**: `export NODE_ENV=development`
 1. **Run tests**: `npm test`
 
 ### Features
