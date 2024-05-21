@@ -14,69 +14,6 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/api/health": {
-      "get": {
-        "tags": ["healthcheck"],
-        "summary": "Application service health check 💗",
-        "produces": ["application/json"],
-        "consumes": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/user": {
-      "post": {
-        "tags": ["create user"],
-        "description": "Create user",
-        "parameters": [
-          {
-            "name": "x-api-key",
-            "in": "header",
-            "default": "Provide API-key (ie. API_KEY_TOKEN from .localhost.env file)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Input",
-            "in": "body",
-            "description": "Input data required to create new user",
-            "schema": {
-              "$ref": "#/definitions/UserInput"
-            }
-          }
-        ],
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "User has been created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/definitions/ResponseWithMessage"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access forbidden. Incorrect x-api-key!",
-            "error": {}
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "message": {}
-          }
-        },
-        "security": [
-          {
-            "api_key": "$X_API_KEY"
-          }
-        ]
-      }
-    },
     "/api/database-info/databases": {
       "get": {
         "tags": ["Database Data"],
