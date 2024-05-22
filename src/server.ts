@@ -9,7 +9,7 @@ const { port } = config;
 
 const server: Server = app.listen(port, async (): Promise<void> => {
   await db.connect();
-  logger.info(`Aapplication listens on PORT: ${port}`);
+  logger.info(`Application listens on PORT: ${port}`);
 });
 
 const exitHandler = (): void => {
