@@ -36,3 +36,14 @@ export const updateDappValidation = {
     abis: abiSchema,
   }),
 };
+
+export const runIndexerValidation = {
+  body: Joi.object({
+    id: Joi.string()
+      .guid({
+        version: ['uuidv4'],
+      })
+      .required(),
+    fromBlock: Joi.number().integer().allow(null),
+  }),
+};

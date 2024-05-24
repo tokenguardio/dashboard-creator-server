@@ -2,11 +2,10 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
 import logger from '@core/utils/logger';
-// import Docker from 'dockerode';
+import Docker from 'dockerode';
 import { IDAppData } from './dapp-analytics.interface';
 
 // const docker = new Docker({ socketPath: '/var/run/docker.sock' });
-
 const { API_BASE_URL } = process.env;
 
 export const saveDapp = async (
@@ -27,31 +26,9 @@ export const saveDapp = async (
     });
 
     if (response.status === 201) {
-      // const { id } = response.data.data;
-
-      // // Define Docker container options
-      // const container = await docker.createContainer({
-      //   Image: 'yourimage:tag', // Specify your Docker image
-      //   name: `dapp-${id}`,
-      //   ExposedPorts: {
-      //     '80/tcp': {}, // Define ports based on your application's requirements
-      //   },
-      //   HostConfig: {
-      //     PortBindings: {
-      //       '80/tcp': [{ HostPort: '8080' }], // Map internal ports to external
-      //     },
-      //   },
-      //   Env: [`DAPP_ID=${id}`, `FROM_BLOCK=${fromBlock}`],
-      // });
-
-      // await container.start();
-
-      // return res.status(httpStatus.CREATED).json({
-      //   message: 'DApp and corresponding Docker container started successfully',
-      //   dAppId: id,
-      //   containerId: container.id,
-      // });
-      return res.status(httpStatus.CREATED);
+      return res.status(httpStatus.CREATED).send({
+        message: 'DApp added successfully',
+      });
     }
 
     return res.status(response.status).json({
@@ -69,6 +46,42 @@ export const saveDapp = async (
     });
   }
 };
+
+// export const startDappIndexer = async (
+//   req: Request,
+//   res: Response,
+// ): Promise<Response> => {
+//   const { id, fromBlock } = req.body;
+
+//   try {
+//     const container = await docker.createContainer({
+//       Image: 'yourindexerimage:latest',
+//       name: `indexer-${id}`,
+//       ExposedPorts: {
+//         '80/tcp': {},
+//       },
+//       HostConfig: {
+//         PortBindings: {
+//           '80/tcp': [{ HostPort: '8080' }],
+//         },
+//       },
+//       Env: [`DAPP_ID=${id}`, `FROM_BLOCK=${fromBlock}`],
+//     });
+
+//     await container.start();
+
+//     return res.status(httpStatus.CREATED).json({
+//       message: 'Indexer container started successfully',
+//       containerId: container.id,
+//     });
+//   } catch (error) {
+//     logger.error('Error in starting the indexer Docker container:', error);
+//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//       message: 'Failed to start indexer Docker container',
+//       error: error.message,
+//     });
+//   }
+// };
 
 export const updateDapp = async (
   req: Request,
