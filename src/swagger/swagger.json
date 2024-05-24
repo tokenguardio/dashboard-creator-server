@@ -14,6 +14,121 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
+    "/dapp-analytics": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Save a new DApp",
+        "description": "This endpoint saves a new DApp based on the given data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "dapp",
+            "description": "DApp data to save",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppData"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "DApp added successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": ["DApp Management"],
+        "summary": "Get all DApps",
+        "description": "Retrieve all DApps from the system.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "A list of DApps",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DApp"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/dapp-analytics/{id}": {
+      "get": {
+        "tags": ["DApp Management"],
+        "summary": "Get a DApp by ID",
+        "description": "Retrieve a single DApp by its ID.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the DApp to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single DApp",
+            "schema": {
+              "$ref": "#/definitions/DApp"
+            }
+          },
+          "404": {
+            "description": "DApp not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["DApp Management"],
+        "summary": "Update a DApp by ID",
+        "description": "Update data for an existing DApp.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the DApp to update"
+          },
+          {
+            "in": "body",
+            "name": "dapp",
+            "description": "DApp data to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DApp updated successfully"
+          },
+          "404": {
+            "description": "DApp not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "tags": ["healthcheck"],
@@ -206,6 +321,70 @@
     }
   },
   "definitions": {
+    "DAppData": {
+      "type": "object",
+      "required": ["name", "blockchain", "abis"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "blockchain": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "addedBy": {
+          "type": "string"
+        },
+        "abis": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "DApp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "blockchain": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "addedBy": {
+          "type": "string"
+        },
+        "abis": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
     "Input": {
       "required": ["input"],
       "properties": {
