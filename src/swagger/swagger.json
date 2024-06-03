@@ -347,7 +347,19 @@
         "abis": {
           "type": "array",
           "items": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "abi": {
+                "type": "object"
+              }
+            },
+            "required": ["name", "address", "abi"]
           }
         }
       }
@@ -380,7 +392,19 @@
         "abis": {
           "type": "array",
           "items": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "abi": {
+                "type": "object"
+              }
+            },
+            "required": ["name", "address", "abi"]
           }
         }
       }
