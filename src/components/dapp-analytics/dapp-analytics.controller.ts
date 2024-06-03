@@ -32,16 +32,13 @@ export const saveDapp = async (
     }
 
     return res.status(response.status).json({
-      message: 'Failed to add dApp, no container was started',
+      message: 'Failed to add dApp',
       details: response.data,
     });
   } catch (error) {
-    logger.error(
-      'Error in adding new DApp and starting its Docker container:',
-      error,
-    );
+    logger.error('Error in adding new DApp', error);
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
-      message: 'Failed to add new DApp and start Docker container',
+      message: 'Failed to add new DApp',
       error: error.message,
     });
   }

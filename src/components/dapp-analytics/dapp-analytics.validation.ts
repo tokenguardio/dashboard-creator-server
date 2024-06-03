@@ -13,7 +13,7 @@ const substrateAddressValidator = Joi.extend((joi) => ({
       decodeAddress(value);
       return { value };
     } catch (error) {
-      return { value, errors: helpers.error('substrateAddress.base') };
+      return { errors: helpers.error('substrateAddress.base') };
     }
   },
 }));
@@ -27,20 +27,21 @@ const subsquidAbiValidator = Joi.extend((joi) => ({
   },
   validate(value, helpers) {
     try {
-      new SubsquidAbi(value); // Attempt to instantiate SubsquidAbi with the value
-      return { value }; // If successful, return the value
+      new SubsquidAbi(value);
+      return { value };
     } catch (error) {
-      return { value, errors: helpers.error('subsquidAbi.validate') };
+      return { errors: helpers.error('subsquidAbi.validate') };
     }
   },
 }));
 
-const abiSchema = Joi.object()
-  .pattern(
-    substrateAddressValidator.substrateAddress(),
-    subsquidAbiValidator.subsquidAbi(),
-  )
-  .required();
+const abiSchema = Joi.array().items(
+  Joi.object({
+    name: Joi.string(),
+    address: substrateAddressValidator.substrateAddress().required(),
+    abi: subsquidAbiValidator.subsquidAbi().required(),
+  }),
+);
 
 export const saveDappValidation = {
   body: Joi.object({
@@ -57,9 +58,7 @@ export const saveDappValidation = {
 export const getDappByIdValidation = {
   params: Joi.object({
     id: Joi.string()
-      .guid({
-        version: ['uuidv4'],
-      })
+      .guid({ version: ['uuidv4'] })
       .required(),
   }),
 };
@@ -80,9 +79,7 @@ export const updateDappValidation = {
 export const runIndexerValidation = {
   body: Joi.object({
     id: Joi.string()
-      .guid({
-        version: ['uuidv4'],
-      })
+      .guid({ version: ['uuidv4'] })
       .required(),
     fromBlock: Joi.number().integer().allow(null),
   }),

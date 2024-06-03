@@ -10,7 +10,6 @@ export interface ValidSchema {
 
 export class ApiError extends Error {
   httpCode: number;
-
   isOperational: boolean;
 
   constructor(
