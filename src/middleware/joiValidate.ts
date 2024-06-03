@@ -8,19 +8,19 @@ export interface ValidSchema {
   body?: any;
 }
 
-class ApiError extends Error {
-  statusCode: number;
+export class ApiError extends Error {
+  httpCode: number;
 
   isOperational: boolean;
 
   constructor(
-    statusCode: number,
+    httpCode: number,
     message: string,
     isOperational: boolean = true,
     stack: string = '',
   ) {
     super(message);
-    this.statusCode = statusCode;
+    this.httpCode = httpCode;
     this.isOperational = isOperational;
 
     if (stack) {
