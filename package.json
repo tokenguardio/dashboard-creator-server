@@ -20,7 +20,8 @@
     "lint:fix": "eslint **/*.ts --fix",
     "prettier": "prettier --check \"{*.js,!(node*)**/*.ts}\"",
     "prettier:fix": "prettier --write \"{*.js,!(node*)**/*.ts}\"",
-    "loglevel:change": "runtime-node-refresh"
+    "loglevel:change": "runtime-node-refresh",
+    "preload-data:blockchains": "ts-node -r tsconfig-paths/register src/components/blockchain/blockchain.script.ts"
   },
   "dependencies": {
     "@polkadot/keyring": "^12.6.2",
@@ -56,6 +57,7 @@
     "supertest": "^6.3.4",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
+    "tsconfig-paths": "^3.12.0",
     "ts-jest": "^29.1.1",
     "typescript": "^4.5.2",
     "uuid": "^9.0.0",
