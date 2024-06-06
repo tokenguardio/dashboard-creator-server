@@ -11,7 +11,7 @@ This repository is part of the whole project with its corresponding frontend ser
 - **Data Storage**: Store visualization and dashboard-related data in MongoDB for efficient retrieval and management.
 - **Scalability**: Built with scalability in mind to handle large datasets and user traffic effectively.
 
-For detailed description of features, please refer guide in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.4/TESTING) section.
+For detailed description of features, please refer guide in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.5/TESTING) section.
 
 ### Getting Started
 
@@ -19,14 +19,13 @@ To get started with the dashboard builder server, follow these steps:
 
 1. **Clone the Repository**: `git clone https://github.com/tokenguardio/dashboard-creator-server.git`
 2. **go to repo root directory**: `cd dashboard-creator-server`
-3. **switch to latest creator release**: `git checkout tags/v2.0.4 -b branch-v2.0.4`
+3. **switch to latest creator release**: `git checkout tags/v2.0.5 -b branch-v2.0.5`
 4. **Install Dependencies**: `npm install`
-5. **prepare environemnt variables**: cp .env.example .env
-6. **set environment variables**
-7. **Run the Development Server**: `npm run server:dev`
-8. **see the results**: go to http://localhost:<PORT>/api-docs to see the swagger documentation endpoints
+5. **prepare environemnt variables**: by default, service uses environment variables provided in `.localhost.env` file. If you are willing to change that, preferably adjust contents of `.localhost.env` or provide environment variables explicitly via `export XYZ` before running the app
+6. **Run the Development Server**: `npm run server:dev`
+7. **see the results**: go to http://localhost:<PORT>/api-docs to see the swagger documentation endpoints
 
-**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.4/TESTING) section.
+**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.5/TESTING) section.
 
 ### Getting Started with Docker
 
@@ -36,18 +35,18 @@ In order to build and run development image:
 
 1. **Clone the Repository**: `git clone https://github.com/tokenguardio/dashboard-creator-server.git`
 2. **go to repo root directory**: `cd dashboard-creator-server`
-3. **switch to latest creator release**: `git checkout tags/v2.0.4 -b branch-v2.0.4`
+3. **switch to latest creator release**: `git checkout tags/v2.0.5 -b branch-v2.0.5`
 4. **build image**: `docker build -f Dev.Dockerfile -t dashboard-creator-server-dev .`
 5. **prepare environemnt variables**: cp .env.example .env
-6. **set environment variables**
+6. **set environment variables** in .env file
 7. **run image**: `docker run -p 8081:8081 --env-file .env dashboard-creator-server-dev`
 8. **see the results**: go to http://localhost:8081/api-docs to see the swagger documentation endpoints
 
-**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.4/TESTING) section.
+**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.5/TESTING) section.
 
 ### Running Unit Tests
 
-1. **set env**: `export NODE_ENV=development`
+1. **install dependencies**: `npm install`
 2. **Run tests**: `npm test`
    tests outcome:
 
@@ -60,7 +59,7 @@ Time:        17.633 s
 
 ### Integration tests
 
-To see full application with all its features visit [demo app](https://demo-dc-app.tokenguard.io/). To roll out your own demo app with all its features, please follow instructions in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.4/TESTING) section.
+To see full application with all its features visit [demo app](https://demo-dc-app.tokenguard.io/). To roll out your own demo app with all its features, please follow instructions in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.5/TESTING) section.
 
 ### Tech Stack
 

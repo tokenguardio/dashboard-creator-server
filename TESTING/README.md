@@ -4,7 +4,7 @@
 
 This guide covers how to set up and run integration tests for the project. Integration tests ensure that different parts of the application work together as expected. This respository is part of a bigger system consisting of 3 components + corresponding databases.
 
-1. [dashboard-creator-server](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.4) - the backend service storing information about build dashboards and queries
+1. [dashboard-creator-server](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.5) - the backend service storing information about build dashboards and queries
 2. [dashboard-creator-client](https://github.com/tokenguardio/dashboard-creator-client/tree/v2.0.3) - frontend app
 3. [db-api](https://hub.docker.com/r/patternsjrojek/db-api) - REST interface between PostgreSQL database and backend service. [Tokenguard.io](https://tokenguard.io) has its private implementation of such service and its image is available in dockerhub, however everyone is encouraged to create his own db-api and connect it to provided dashboard builder backend and frontend. The requirements for db-api interface schema are provided in [db-api.swagger.json](db-api.swagger.json) file.
 
@@ -28,7 +28,7 @@ Before you begin, make sure you have the following installed on your system:
 6. **move back to project root dir**: `cd ..`
 7. **clone backend repository**: `git clone https://github.com/tokenguardio/dashboard-creator-server.git`
 8. **go to repo root directory**: `cd dashboard-creator-server`
-9. **switch to latest creator release**: `git checkout tags/v2.0.4 -b branch-v2.0.4`
+9. **switch to latest creator release**: `git checkout tags/v2.0.5 -b branch-v2.0.5`
 10. **move back to project root dir**: `cd ..`
 11. **copy docker-compose file to project root dir**: `cp dashboard-creator-server/TESTING/docker-compose.yml .`
 12. **build and run docker-compose**: `docker-compose up`
@@ -42,7 +42,7 @@ git checkout tags/v2.0.3 -b branch-v2.0.3
 cd ..
 git clone https://github.com/tokenguardio/dashboard-creator-server.git
 cd dashboard-creator-server
-git checkout tags/v2.0.4 -b branch-v2.0.4
+git checkout tags/v2.0.5 -b branch-v2.0.5
 cd ..
 cp dashboard-creator-server/TESTING/docker-compose.yml .
 docker-compose up
