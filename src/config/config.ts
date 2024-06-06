@@ -1,5 +1,7 @@
 import Joi from 'joi';
+import * as dotenv from 'dotenv';
 
+dotenv.config({ path: '.localhost.env' });
 // All env variables used by the app should be defined in this file.
 
 // To define new env:
@@ -16,8 +18,11 @@ const envsSchema = Joi.object()
       .required(),
     PORT: Joi.number().default(8080),
     API_KEY_TOKEN: Joi.string().required(),
+    API_BASE_URL: Joi.string().required(),
     MONGODB_URL: Joi.string().required(),
     MONGODB_DB_NAME: Joi.string().required(),
+    CLIENT_URL: Joi.string().required(),
+    DB_TLS_CA_CERT_FILE: Joi.string().optional(),
   })
   .unknown(true);
 
@@ -37,6 +42,9 @@ export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   xApiKey: envVars.API_KEY_TOKEN,
+  dbApiUrl: envVars.API_BASE_URL,
   mongoUrl: envVars.MONGODB_URL,
   mongoDbName: envVars.MONGODB_DB_NAME,
+  clientUrl: envVars.CLIENT_URL,
+  tlsCAFile: envVars.DB_TLS_CA_CERT_FILE,
 };

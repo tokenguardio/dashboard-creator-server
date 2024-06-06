@@ -24,7 +24,9 @@ To get started with the dashboard builder server, follow these steps:
 5. **prepare environemnt variables**: cp .env.example .env
 6. **set environment variables**
 7. **Run the Development Server**: `npm run server:dev`
-8. **see the results**: go to http://localhost:<PORT>/api-docs to see the swagger documentation endpoints
+8. **see the results**: go to http://localhost:<PORT>/api-docs to see the swagger documentation endpoints  
+
+**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.3/TESTING) section.  
 
 ### Getting Started with Docker
 
@@ -41,7 +43,7 @@ In order to build and run development image:
 8. **see the results**: go to http://localhost:8081/api-docs to see the swagger documentation endpoints
 
 
-On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.3/TESTING) section.  
+**NOTE**: On its own, the backend service will report errors because it cannot connect to database rest api service. For information about rolling out fully functional testing/demo environment, please see [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.3/TESTING) section.  
 
 ### Running Unit Tests
 

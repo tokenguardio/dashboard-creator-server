@@ -5,6 +5,7 @@ import lusca from 'lusca';
 import httpContext from 'express-http-context';
 import expressMongoSanitize from 'express-mongo-sanitize';
 import consts from '@config/consts';
+import config from '@config/config';
 import httpLogger from '@core/utils/httpLogger';
 import errorHandling from '@core/middlewares/errorHandling.middleware';
 import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
@@ -13,7 +14,7 @@ import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import cors from 'cors';
 
 const opts = {
-  origin: [process.env.CLIENT_URL],
+  origin: [config.clientUrl],
 };
 
 const app: Application = express();

@@ -1,13 +1,12 @@
-// TODO: use babel to run it with ES6
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig.json');
-require('dotenv').config({ path: '.localhost.env' });
 
 module.exports = {
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: '<rootDir>/src',
-  }),
+  preset: 'ts-jest',
   testEnvironment: 'node',
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/src/',
+  }),
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
@@ -16,5 +15,5 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
   moduleDirectories: ['node_modules'],
-  setupFiles: ['dotenv/config'],
+  setupFiles: ['<rootDir>/.jest/setEnvVars.js'],
 };
