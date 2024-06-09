@@ -145,6 +145,15 @@
       "get": {
         "summary": "Retrieve all schemas",
         "description": "Retrieves a list of all schemas in the current database.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dbname",
+            "required": true,
+            "description": "Name of the database.",
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successfully retrieved all schemas.",
@@ -170,6 +179,15 @@
       "get": {
         "summary": "Retrieve all tables",
         "description": "Retrieves a list of all tables in the current database, excluding system tables.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dbname",
+            "required": true,
+            "description": "Name of the database.",
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successfully retrieved all tables.",
@@ -178,7 +196,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "tables": { "type": "array", "items": { "type": "string" } }
+                    "tables": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
                   }
                 }
               }
