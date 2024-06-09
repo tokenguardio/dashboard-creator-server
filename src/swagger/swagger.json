@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "Node Express Template -> (NET.ts) ",
+    "title": "Node Express Template -> (NET.ts)",
     "description": "Node.js NET.ts RESTful API",
     "license": {
       "name": "MIT",
@@ -28,10 +28,18 @@
         }
       }
     },
-    "/api/database-info/schemas": {
+    "/api/database-info/{dbname}/schemas": {
       "get": {
         "tags": ["Database Data"],
         "summary": "Get all schemas",
+        "parameters": [
+          {
+            "name": "dbname",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of schemas"
@@ -42,10 +50,18 @@
         }
       }
     },
-    "/api/database-info/tables": {
+    "/api/database-info/{dbname}/tables": {
       "get": {
         "tags": ["Database Data"],
         "summary": "Get all tables",
+        "parameters": [
+          {
+            "name": "dbname",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of tables"
@@ -56,19 +72,25 @@
         }
       }
     },
-    "/api/database-info/tables/{schemaName}/{tableName}/columns": {
+    "/api/database-info/{dbname}/tables/{schema}/{table}/columns": {
       "get": {
         "tags": ["Database Data"],
         "summary": "Get columns for a given table",
         "parameters": [
           {
-            "name": "schemaName",
+            "name": "dbname",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "tableName",
+            "name": "schema",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "table",
             "in": "path",
             "required": true,
             "type": "string"
@@ -84,11 +106,17 @@
         }
       }
     },
-    "/api/database-info/generate-chart-data/{schema}/{table}": {
+    "/api/database-info/generate-chart-data/{dbname}/{schema}/{table}": {
       "post": {
         "tags": ["Database Data"],
         "summary": "Generate chart data for a given schema and table",
         "parameters": [
+          {
+            "name": "dbname",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "schema",
             "in": "path",
