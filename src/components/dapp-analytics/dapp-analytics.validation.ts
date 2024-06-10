@@ -84,3 +84,19 @@ export const runIndexerValidation = {
     fromBlock: Joi.number().integer().allow(null),
   }),
 };
+
+export const getDappAbiEventsValidation = {
+  params: Joi.object({
+    id: Joi.string()
+      .guid({ version: ['uuidv4'] })
+      .required(),
+  }),
+};
+
+export const getDappAbiCallsValidation = {
+  params: Joi.object({
+    id: Joi.string()
+      .guid({ version: ['uuidv4'] })
+      .required(),
+  }),
+};

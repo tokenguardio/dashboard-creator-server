@@ -14,7 +14,7 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/api/dapp-analytics": {
+    "/api/dapp-analytics/dapp": {
       "post": {
         "tags": ["DApp Management"],
         "summary": "Save a new DApp",
@@ -40,7 +40,9 @@
             "description": "Internal server error"
           }
         }
-      },
+      }
+    },
+    "/api/dapp-analytics/dapp/all": {
       "get": {
         "tags": ["DApp Management"],
         "summary": "Get all DApps",
@@ -62,7 +64,7 @@
         }
       }
     },
-    "/api/dapp-analytics/{id}": {
+    "/api/dapp-analytics/dapp/{id}": {
       "get": {
         "tags": ["DApp Management"],
         "summary": "Get a DApp by ID",
@@ -125,6 +127,283 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/units": {
+      "get": {
+        "summary": "Get Dapp Units",
+        "description": "Retrieve units for dapp analytics.",
+        "tags": ["Dapp Analytics"],
+        "responses": {
+          "200": {
+            "description": "Units read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Units read"
+                    },
+                    "output": {
+                      "type": "object",
+                      "properties": {
+                        "units": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": [
+                            "Wallets",
+                            "Transferred tokens",
+                            "Number of interactions"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/{id}/abi/events": {
+      "get": {
+        "summary": "Get Dapp ABI Events",
+        "description": "Retrieve events from the dapp ABI.",
+        "tags": ["Dapp Analytics"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the dapp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dapp ABI events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "docs": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid UUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dApps found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "No dApps found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to connect to backend service"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/{id}/abi/calls": {
+      "get": {
+        "summary": "Get Dapp ABI Calls",
+        "description": "Retrieve calls from the dapp ABI.",
+        "tags": ["Dapp Analytics"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the dapp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dapp ABI functions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "selector": {
+                          "type": "string"
+                        },
+                        "mutates": {
+                          "type": "boolean"
+                        },
+                        "payable": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid UUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dApps found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "No dApps found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to connect to backend service"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -516,6 +795,62 @@
         "slug": {
           "type": "string",
           "description": "Slug of the blockchain"
+        }
+      },
+      "DappAbiEvent": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "docs": {
+            "type": "string"
+          }
+        }
+      },
+      "DappAbiFunction": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "selector": {
+            "type": "string"
+          },
+          "mutates": {
+            "type": "boolean"
+          },
+          "payable": {
+            "type": "boolean"
+          }
         }
       }
     },
