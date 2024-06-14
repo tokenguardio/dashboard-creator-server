@@ -4,7 +4,7 @@ import {
   updateDapp,
   getDapp,
   getAllDapps,
-  // startDappIndexer,
+  startDappIndexer,
   getDappUnits,
   getDappAbiEvents,
   getDappAbiCalls,
@@ -55,6 +55,11 @@ router.post(
   validate(dappDataMetricsValidation),
   getDappDataMetrics,
 );
-// router.post('/start-indexer', validate(runIndexerValidation), startDappIndexer);
+
+router.post(
+  '/dapp-analytics/start-indexer',
+  validate(runIndexerValidation),
+  startDappIndexer,
+);
 
 export default router;

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
 import logger from '@core/utils/logger';
-import Docker from 'dockerode';
 import { IDAppData } from './dapp-analytics.interface';
 import {
   IAbi,
@@ -16,10 +15,9 @@ import {
   IAbiCallsOutputContract,
   IAbiCallsOutputContractCall,
 } from './abi.interface';
-import { resolve } from 'path';
 import { resolveType } from './substrate-types.mapping';
+import { docker } from 'server';
 
-// const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 const { API_BASE_URL } = process.env;
 
 export const saveDapp = async (
@@ -59,41 +57,83 @@ export const saveDapp = async (
   }
 };
 
-// export const startDappIndexer = async (
-//   req: Request,
-//   res: Response,
-// ): Promise<Response> => {
-//   const { id, fromBlock } = req.body;
+export const startDappIndexer = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id } = req.body;
+  const containerName = `indexer-${id}`;
 
-//   try {
-//     const container = await docker.createContainer({
-//       Image: 'yourindexerimage:latest',
-//       name: `indexer-${id}`,
-//       ExposedPorts: {
-//         '80/tcp': {},
-//       },
-//       HostConfig: {
-//         PortBindings: {
-//           '80/tcp': [{ HostPort: '8080' }],
-//         },
-//       },
-//       Env: [`DAPP_ID=${id}`, `FROM_BLOCK=${fromBlock}`],
-//     });
+  const { data: dappData, error: dappError } = await fetchDappById(id);
+  if (dappError) {
+    logger.error(`Failed to fetch DApp with id ${id}:`, dappError.message);
+    return res.status(dappError.status).json({ message: dappError.message });
+  }
 
-//     await container.start();
+  const date = new Date(dappData.created_at);
+  const timestamp = date.getTime();
 
-//     return res.status(httpStatus.CREATED).json({
-//       message: 'Indexer container started successfully',
-//       containerId: container.id,
-//     });
-//   } catch (error) {
-//     logger.error('Error in starting the indexer Docker container:', error);
-//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-//       message: 'Failed to start indexer Docker container',
-//       error: error.message,
-//     });
-//   }
-// };
+  try {
+    let container;
+    let message = '';
+    try {
+      container = await docker.getContainer(containerName);
+      const containerInfo = await container.inspect();
+
+      if (containerInfo.State.Status !== 'running') {
+        await container.start();
+        message = `Existing container started: ${containerName}`;
+        logger.info(message);
+      } else {
+        message = `Container is already running: ${containerName}`;
+        logger.info(message);
+      }
+    } catch (error) {
+      if (error.statusCode === 404) {
+        container = await docker.createContainer({
+          Image: 'wasabi:latest',
+          name: containerName,
+          Labels: {
+            'managed-by': 'dapp-analytics',
+          },
+          Env: [
+            `DAPP_ID=${id}`,
+            'DB_HOST=host.docker.internal',
+            'DB_NAME=azero_mainnet_squid',
+            'DB_USER=squid',
+            'DB_PASS=postgres',
+            'DB_PORT=5432',
+            'RPC_ENDPOINT=https://aleph-zero-rpc.dwellir.com',
+            'SS58_NETWORK=substrate',
+            'ARCHIVE_NAME=aleph-zero',
+            'RPC_INGESTION_DISABLED=true',
+            `CREATED_TIMESTAMP=${timestamp}`,
+          ],
+        });
+        await container.start();
+        message = `New container created and started: ${containerName}`;
+        logger.info(message);
+      } else {
+        logger.error('Error retrieving container:', error);
+        throw error;
+      }
+    }
+
+    return res.status(httpStatus.CREATED).json({
+      message: message,
+      containerId: container.id,
+    });
+  } catch (error) {
+    logger.error(
+      'Error in starting the indexer Docker container:',
+      error.message,
+    );
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to start indexer Docker container',
+      error: error.message,
+    });
+  }
+};
 
 export const updateDapp = async (
   req: Request,
@@ -136,29 +176,44 @@ export const getDapp = async (
   res: Response,
 ): Promise<Response> => {
   const { id } = req.params;
+  const { data, error } = await fetchDappById(id);
+
+  if (!error) {
+    return res.status(httpStatus.OK).json(data);
+  } else {
+    return res.status(error.status).json({ message: error.message });
+  }
+};
+
+export async function fetchDappById(id) {
   try {
     const response = await axios.get(
       `${API_BASE_URL}/dapp-analytics/dapp/${id}`,
     );
-
     if (response.status === 200) {
-      return res.status(httpStatus.OK).json(response.data);
+      return { data: response.data, error: null };
     }
-    return res.status(response.status).json({
-      message: response.data.message || 'DApp not found',
-    });
+    return {
+      error: {
+        status: response.status,
+        message: response.data.message || 'DApp not found',
+      },
+    };
   } catch (error) {
     logger.error(`Error retrieving DApp with id ${id}:`, error);
     if (error.response) {
-      return res.status(error.response.status).json({
-        message: error.response.data.message || 'Error retrieving DApp',
-      });
+      return {
+        error: {
+          status: error.response.status,
+          message: error.response.data.message || 'Error retrieving DApp',
+        },
+      };
     }
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'Failed to connect to backend service',
-    });
+    return {
+      error: { status: 500, message: 'Failed to connect to backend service' },
+    };
   }
-};
+}
 
 export const getAllDapps = async (
   req: Request,
