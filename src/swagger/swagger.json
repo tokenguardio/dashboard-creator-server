@@ -432,7 +432,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Metric to retrieve (e.g., 'users', 'transferred-tokens', 'interactions')"
+            "description": "Metric to retrieve (e.g., 'wallets', 'transferred-tokens', 'interactions')"
           },
           {
             "name": "body",
@@ -971,11 +971,11 @@
           "format": "date-time",
           "example": "2024-03-17T00:00:00.000Z"
         },
-        "user_count": {
+        "uwalletCount": {
           "type": "integer",
           "example": 1
         },
-        "users": {
+        "wallets": {
           "type": "array",
           "items": {
             "type": "object",
