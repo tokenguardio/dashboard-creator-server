@@ -51,9 +51,10 @@ const dashboardElementCustomQuerySchema =
 
 const dashboardElementDappAnalyticsSchema =
   new mongoose.Schema<IDashboardElementDappAnalytics>({
+    dappId: { type: String, required: true },
     metric: {
       type: String,
-      enum: ['wallets', 'transferred-tokens', 'interactions'],
+      enum: ['wallets', 'transferredTokens', 'interactions'],
       required: true,
     },
     breakdown: { type: Boolean, default: false },

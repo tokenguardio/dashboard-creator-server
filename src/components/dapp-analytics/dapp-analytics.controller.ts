@@ -250,7 +250,7 @@ export const getDappUnits = async (
     output: {
       units: [
         { label: 'Wallets', value: 'wallets' },
-        { label: 'Transferred tokens', value: 'transferred-tokens' },
+        { label: 'Transferred tokens', value: 'transferredTokens' },
         { label: 'Number of interactions', value: 'interactions' },
       ],
     },

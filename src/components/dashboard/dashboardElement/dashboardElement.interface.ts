@@ -70,8 +70,8 @@ export interface IDashboardElementDappAnalyticsFilter {
 
 export interface IDashboardElementDappAnalytics extends IDashboardElementVis {
   type: 'dappAnalytics';
-  id: string;
-  metric: 'wallets' | 'transferred-tokens' | 'interactions';
+  dappId: string;
+  metric: 'wallets' | 'transferredTokens' | 'interactions';
   breakdown: boolean;
   filters: IDashboardElementDappAnalyticsFilter[];
 }
