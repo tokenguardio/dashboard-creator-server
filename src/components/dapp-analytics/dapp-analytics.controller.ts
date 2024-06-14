@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { Abi as SubsquidAbi } from '@subsquid/ink-abi';
 import axios from 'axios';
 import logger from '@core/utils/logger';
 import Docker from 'dockerode';
@@ -30,7 +29,7 @@ export const saveDapp = async (
   try {
     const { name, logo, blockchain, website, fromBlock, addedBy, abis } =
       req.body as IDAppData;
-    const response = await axios.post(`${API_BASE_URL}/dapp-analytics`, {
+    const response = await axios.post(`${API_BASE_URL}/dapp-analytics/dapp`, {
       name,
       logo,
       blockchain,
@@ -105,15 +104,18 @@ export const updateDapp = async (
     req.body;
 
   try {
-    const response = await axios.patch(`${API_BASE_URL}/dapp-analytics/${id}`, {
-      name,
-      logo,
-      blockchain,
-      website,
-      fromBlock,
-      addedBy,
-      abis: abis ? JSON.stringify(abis) : undefined,
-    });
+    const response = await axios.patch(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}`,
+      {
+        name,
+        logo,
+        blockchain,
+        website,
+        fromBlock,
+        addedBy,
+        abis: abis ? JSON.stringify(abis) : undefined,
+      },
+    );
 
     if (response.status === 200) {
       return res.status(httpStatus.OK).json(response.data);
@@ -135,7 +137,9 @@ export const getDapp = async (
 ): Promise<Response> => {
   const { id } = req.params;
   try {
-    const response = await axios.get(`${API_BASE_URL}/dapp-analytics/${id}`);
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}`,
+    );
 
     if (response.status === 200) {
       return res.status(httpStatus.OK).json(response.data);
@@ -161,7 +165,7 @@ export const getAllDapps = async (
   res: Response,
 ): Promise<Response> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/dapp-analytics`);
+    const response = await axios.get(`${API_BASE_URL}/dapp-analytics/dapp/all`);
 
     if (response.status === 200) {
       return res.status(httpStatus.OK).json(response.data);
@@ -238,7 +242,7 @@ export const getDappAbiEvents = async (
 ): Promise<Response> => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/dapp-analytics/${req.params.id}`,
+      `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
     );
 
     if (response.status === 200) {
@@ -277,7 +281,7 @@ export const getDappAbiCalls = async (
 ): Promise<Response> => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/dapp-analytics/${req.params.id}`,
+      `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
     );
 
     if (response.status === 200) {
@@ -307,6 +311,37 @@ export const getDappAbiCalls = async (
     }
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: 'Failed to connect to backend service',
+    });
+  }
+};
+
+export const getDappDataMetrics = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id, metric } = req.params;
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/dapp-analytics/data/${id}/${metric}`,
+      req.body,
+    );
+    logger.info('Response:', response.status, response.data);
+    if (response.status === 200) {
+      return res.status(httpStatus.OK).send({
+        message: 'DApp data read',
+        output: response.data,
+      });
+    }
+
+    return res.status(response.status).json({
+      message: 'Failed to add dApp',
+      details: response.data,
+    });
+  } catch (error) {
+    logger.error('Error in adding new DApp', error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
+      message: 'Failed to add new DApp',
+      error: error.message,
     });
   }
 };

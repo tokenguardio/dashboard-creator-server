@@ -8,6 +8,7 @@ import {
   getDappUnits,
   getDappAbiEvents,
   getDappAbiCalls,
+  getDappDataMetrics,
 } from './dapp-analytics.controller';
 import validate from '../../middleware/joiValidate';
 import {
@@ -17,6 +18,7 @@ import {
   runIndexerValidation,
   getDappAbiEventsValidation,
   getDappAbiCallsValidation,
+  dappDataMetricsValidation,
 } from './dapp-analytics.validation';
 
 const router: Router = Router();
@@ -48,6 +50,11 @@ router.get(
   getDappAbiCalls,
 );
 
+router.post(
+  '/dapp-analytics/data/:id/:metric',
+  validate(dappDataMetricsValidation),
+  getDappDataMetrics,
+);
 // router.post('/start-indexer', validate(runIndexerValidation), startDappIndexer);
 
 export default router;

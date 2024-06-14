@@ -408,6 +408,61 @@
         }
       }
     },
+    "/api/dapp-analytics/data/{id}/{metric}": {
+      "post": {
+        "tags": ["Dapp Analytics"],
+        "summary": "Retrieve dApp data metrics",
+        "description": "Retrieve data metrics for a specific dApp.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "dApp ID"
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Metric to retrieve (e.g., 'users', 'transferred-tokens', 'interactions')"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppMetricsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved dApp data metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DAppMetricsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/blockchain/all": {
       "get": {
         "tags": ["Blockchains"],
@@ -796,61 +851,145 @@
           "type": "string",
           "description": "Slug of the blockchain"
         }
-      },
-      "DappAbiEvent": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
-          },
-          "args": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "type": "string"
-                },
-                "type": {
-                  "type": "string"
+      }
+    },
+    "DappAbiEvent": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "docs": {
+          "type": "string"
+        }
+      }
+    },
+    "DappAbiFunction": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "selector": {
+          "type": "string"
+        },
+        "mutates": {
+          "type": "boolean"
+        },
+        "payable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DAppMetricsRequest": {
+      "type": "object",
+      "properties": {
+        "breakdown": {
+          "type": "boolean",
+          "default": false
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["call", "event"]
+              },
+              "args": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["integer", "string", "boolean"]
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "operator": {
+                            "type": "string",
+                            "enum": [">", "<", ">=", "<=", "=", "!="]
+                          },
+                          "value": {
+                            "type": ["number", "string", "boolean"]
+                          }
+                        }
+                      }
+                    },
+                    "value": {
+                      "type": ["string", "boolean"]
+                    }
+                  }
                 }
               }
             }
-          },
-          "docs": {
-            "type": "string"
           }
         }
-      },
-      "DappAbiFunction": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
-          },
-          "args": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "type": "string"
-                },
-                "type": {
-                  "type": "string"
-                }
+      }
+    },
+    "DAppMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2024-03-17T00:00:00.000Z"
+        },
+        "user_count": {
+          "type": "integer",
+          "example": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "example": "5CowKUxKYMBnTD4boJLFCxxd42w7NURahd4pYd9dygBFdQV5"
               }
             }
-          },
-          "selector": {
-            "type": "string"
-          },
-          "mutates": {
-            "type": "boolean"
-          },
-          "payable": {
-            "type": "boolean"
           }
+        },
+        "contract": {
+          "type": "string",
+          "example": "5DG2wPtGcUJgBAWnym8t4swYvmwg2XJuY1ZEhv1EDwJPCj1W"
         }
       }
     },
