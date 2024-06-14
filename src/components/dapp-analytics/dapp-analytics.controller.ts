@@ -193,7 +193,11 @@ export const getDappUnits = async (
   return res.status(httpStatus.OK).json({
     message: 'Units read',
     output: {
-      units: ['Wallets', 'Transferred tokens', 'Number of interactions'],
+      units: [
+        { label: 'Wallets', value: 'wallets' },
+        { label: 'Transferred tokens', value: 'transferred-tokens' },
+        { label: 'Number of interactions', value: 'interactions' },
+      ],
     },
   });
 };
