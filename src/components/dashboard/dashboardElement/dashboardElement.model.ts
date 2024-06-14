@@ -5,6 +5,7 @@ import {
   IDashboardElementText,
   IDashboardElementBasicQuery,
   IDashboardElementCustomQuery,
+  IDashboardElementDappAnalytics,
 } from './dashboardElement.interface';
 
 const dashboardElementSchema = new mongoose.Schema<IDashboardElement>(
@@ -48,6 +49,44 @@ const dashboardElementCustomQuerySchema =
     visType: { type: String, required: true },
   });
 
+const dashboardElementDappAnalyticsSchema =
+  new mongoose.Schema<IDashboardElementDappAnalytics>({
+    metric: {
+      type: String,
+      enum: ['wallets', 'transferred-tokens', 'interactions'],
+      required: true,
+    },
+    breakdown: { type: Boolean, default: false },
+    filters: [
+      {
+        name: { type: String, required: true },
+        type: { type: String, enum: ['call', 'event'], required: true },
+        args: {
+          type: Map,
+          of: {
+            type: {
+              type: String,
+              enum: ['integer', 'string', 'boolean'],
+              required: true,
+            },
+            conditions: [
+              {
+                operator: {
+                  type: String,
+                  enum: ['>', '<', '>=', '<=', '=', '!='],
+                  required: true,
+                },
+                value: { type: mongoose.Schema.Types.Mixed, required: true },
+              },
+            ],
+            value: { type: mongoose.Schema.Types.Mixed },
+          },
+        },
+      },
+    ],
+    visType: { type: String, required: true },
+  });
+
 const DashboardElementModel = mongoose.model<IDashboardElement>(
   'DashboardElement',
   dashboardElementSchema,
@@ -72,6 +111,11 @@ const DashboardElementCustomQueryModel =
     'customQuery',
     dashboardElementCustomQuerySchema,
   );
+const DashboardElementDappAnalyticsModel =
+  DashboardElementModel.discriminator<IDashboardElementDappAnalytics>(
+    'dappAnalytics',
+    dashboardElementDappAnalyticsSchema,
+  );
 
 export {
   DashboardElementModel,
@@ -79,4 +123,5 @@ export {
   DashboardElementTextModel,
   DashboardElementBasicQueryModel,
   DashboardElementCustomQueryModel,
+  DashboardElementDappAnalyticsModel,
 };
