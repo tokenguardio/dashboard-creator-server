@@ -463,6 +463,36 @@
         }
       }
     },
+    "/api/dapp-analytics/start-indexer": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Start the DApp Indexer",
+        "description": "Initiates the indexing process for DApp analytics.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "startIndexerRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StartIndexerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexer started successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/blockchain/all": {
       "get": {
         "tags": ["Blockchains"],
@@ -990,6 +1020,22 @@
         "contract": {
           "type": "string",
           "example": "5DG2wPtGcUJgBAWnym8t4swYvmwg2XJuY1ZEhv1EDwJPCj1W"
+        }
+      }
+    },
+    "StartIndexerRequest": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The UUID for the indexer"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "nullable": true,
+          "description": "The block number from which to start indexing. Can be null."
         }
       }
     },

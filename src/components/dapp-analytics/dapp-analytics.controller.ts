@@ -91,7 +91,7 @@ export const startDappIndexer = async (
     } catch (error) {
       if (error.statusCode === 404) {
         container = await docker.createContainer({
-          Image: 'wasabi:latest',
+          Image: 'patternsjrojek/subsquid-squids:wasabi-latest',
           name: containerName,
           Labels: {
             'managed-by': 'dapp-analytics',
@@ -99,7 +99,7 @@ export const startDappIndexer = async (
           Env: [
             `DAPP_ID=${id}`,
             'DB_HOST=host.docker.internal',
-            'DB_NAME=azero_mainnet_squid',
+            'DB_NAME=dapp_analytics',
             'DB_USER=squid',
             'DB_PASS=postgres',
             'DB_PORT=5432',
@@ -393,7 +393,7 @@ export const getDappDataMetrics = async (
     }
 
     return res.status(response.status).json({
-      message: 'Failed to add dApp',
+      message: 'Failed to read dApp data',
       details: response.data,
     });
   } catch (error) {
