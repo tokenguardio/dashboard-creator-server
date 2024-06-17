@@ -493,6 +493,36 @@
         }
       }
     },
+    "/api/dapp-analytics/stop-indexer": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Stop the DApp Indexer",
+        "description": "Stops the indexing process for DApp analytics.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "stopIndexerRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StartIndexerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexer stopped successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/blockchain/all": {
       "get": {
         "tags": ["Blockchains"],

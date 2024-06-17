@@ -95,6 +95,7 @@ export const startDappIndexer = async (
           name: containerName,
           Labels: {
             'managed-by': 'dapp-analytics',
+            'dapp-id': id,
           },
           Env: [
             `DAPP_ID=${id}`,
@@ -132,6 +133,41 @@ export const startDappIndexer = async (
       message: 'Failed to start indexer Docker container',
       error: error.message,
     });
+  }
+};
+
+export const stopDappIndexer = async (req, res) => {
+  const { id } = req.body;
+  const containerName = `indexer-${id}`;
+
+  try {
+    const container = await docker.getContainer(containerName);
+    const containerInfo = await container.inspect();
+
+    if (containerInfo.State.Status === 'running') {
+      await container.stop();
+      logger.info(`Container stopped: ${containerName}`);
+      return res.status(200).json({
+        message: `Container ${containerName} has been successfully stopped`,
+      });
+    } else {
+      return res.status(200).json({
+        message: `Container ${containerName} is not running and did not need to be stopped`,
+      });
+    }
+  } catch (error) {
+    if (error.statusCode === 404) {
+      logger.error(`Container ${containerName} not found:`, error);
+      return res.status(404).json({
+        message: `Container ${containerName} not found`,
+      });
+    } else {
+      logger.error(`Error stopping container ${containerName}:`, error);
+      return res.status(500).json({
+        message: `Failed to stop container ${containerName}`,
+        error: error.message,
+      });
+    }
   }
 };
 
@@ -176,12 +212,42 @@ export const getDapp = async (
   res: Response,
 ): Promise<Response> => {
   const { id } = req.params;
-  const { data, error } = await fetchDappById(id);
+  const { data: dappData, error: dappError } = await fetchDappById(id);
 
-  if (!error) {
-    return res.status(httpStatus.OK).json(data);
+  if (dappError) {
+    return res.status(dappError.status).json({ message: dappError.message });
   } else {
-    return res.status(error.status).json({ message: error.message });
+    try {
+      const filters = { label: [`managed-by=dapp-analytics`, `dapp-id=${id}`] };
+      const containers = await docker.listContainers({
+        all: true,
+        filters: JSON.stringify(filters),
+      });
+
+      const relatedContainer = containers.find(
+        (container) => container.Labels['dapp-id'] === id,
+      );
+      const responseData = {
+        ...dappData,
+        containerStatus: relatedContainer
+          ? relatedContainer.State
+          : 'not found',
+      };
+
+      if (responseData.containerStatus === 'not found') {
+        return res.status(204).json({
+          message: 'DApp found but no associated container.',
+        });
+      } else {
+        return res.status(200).json(responseData);
+      }
+    } catch (error) {
+      console.error('Error retrieving container status:', error);
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to retrieve container status',
+        error: error.message,
+      });
+    }
   }
 };
 
@@ -221,18 +287,36 @@ export const getAllDapps = async (
 ): Promise<Response> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/dapp-analytics/dapp/all`);
-
-    if (response.status === 200) {
-      return res.status(httpStatus.OK).json(response.data);
+    if (response.status !== 200) {
+      return res.status(response.status).json({
+        message: response.data.message || 'No DApps found',
+      });
     }
-    return res.status(response.status).json({
-      message: response.data.message || 'No dApps found',
+    const dApps = response.data;
+
+    const filters = { label: ['managed-by=dapp-analytics'] };
+    const containers = await docker.listContainers({
+      all: true,
+      filters: JSON.stringify(filters),
     });
+
+    const dAppsWithStatus = dApps.map((dApp) => {
+      const relatedContainer = containers.find(
+        (container) =>
+          container.Labels && container.Labels['dapp-id'] === dApp.id,
+      );
+      return {
+        ...dApp,
+        status: relatedContainer ? relatedContainer.State : 'not found',
+      };
+    });
+
+    return res.status(200).json(dAppsWithStatus);
   } catch (error) {
-    logger.error('Error retrieving all dApps:', error);
+    logger.error('Error retrieving all DApps:', error);
     if (error.response) {
       return res.status(error.response.status).json({
-        message: error.response.data.message || 'Error retrieving all dApps',
+        message: error.response.data.message || 'Error retrieving all DApps',
       });
     }
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({

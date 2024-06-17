@@ -85,6 +85,14 @@ export const runIndexerValidation = {
   }),
 };
 
+export const stopIndexerValidation = {
+  body: Joi.object({
+    id: Joi.string()
+      .guid({ version: ['uuidv4'] })
+      .required(),
+  }),
+};
+
 export const getDappAbiEventsValidation = {
   params: Joi.object({
     id: Joi.string()
