@@ -31,6 +31,7 @@ const themeSchema = new mongoose.Schema<ITheme>({
 
 const dashboardSchema = new mongoose.Schema<IDashboard & Document>({
   title: { type: String, required: true },
+  dappId: { type: String, required: false },
   elements: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DashboardElement' }],
   filters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DashboardFilter' }],
   layout: [layoutSchema],
