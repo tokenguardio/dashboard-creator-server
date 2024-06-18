@@ -383,10 +383,6 @@ export const getDappUnits = async (
 const extractAbiEvents = function (
   contractAbi: IAbi,
 ): IAbiEventsOutputContractEvent[] {
-  contractAbi.spec.events.map((event: IAbiMessage) => {
-    logger.info(event.label);
-  });
-  logger.info(`Events: ${contractAbi.spec.events.length}`);
   // Extract events
   const events: IAbiEventsOutputContractEvent[] = contractAbi.spec.events.map(
     (event: IAbiEvent) => ({
@@ -404,7 +400,6 @@ const extractAbiFunctions = function (
   contractAbi: IAbi,
 ): IAbiCallsOutputContractCall[] {
   // Extract messages (calls)
-  logger.info(JSON.stringify(contractAbi.types, null, 2));
   const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages.map(
     (message: IAbiMessage) => ({
       name: message.label,
@@ -430,7 +425,6 @@ export const getDappAbiEvents = async (
     if (response.status === 200) {
       let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
       const dapp = response.data;
-      logger.info(`DApp: ${dapp.name} abis available: ${dapp.abis.length}`);
       for (const contract of dapp.abis) {
         const dAppContract: IAbiEventsOutputContract = {
           name: contract.name,
@@ -469,7 +463,6 @@ export const getDappAbiCalls = async (
     if (response.status === 200) {
       let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
       const dapp = response.data;
-      logger.info(`DApp: ${dapp.name} abis available: ${dapp.abis.length}`);
 
       for (const contract of dapp.abis) {
         const dAppContract: IAbiCallsOutputContract = {
