@@ -14,6 +14,592 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
+    "/api/dapp-analytics/dapp": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Save a new DApp",
+        "description": "This endpoint saves a new DApp based on the given data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "dapp",
+            "description": "DApp data to save",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppData"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "DApp added successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/all": {
+      "get": {
+        "tags": ["DApp Management"],
+        "summary": "Get all DApps",
+        "description": "Retrieve all DApps from the system.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "A list of DApps",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DApp"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/{id}": {
+      "get": {
+        "tags": ["DApp Management"],
+        "summary": "Get a DApp by ID",
+        "description": "Retrieve a single DApp by its ID.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the DApp to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single DApp",
+            "schema": {
+              "$ref": "#/definitions/DApp"
+            }
+          },
+          "404": {
+            "description": "DApp not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["DApp Management"],
+        "summary": "Update a DApp by ID",
+        "description": "Update data for an existing DApp.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the DApp to update"
+          },
+          {
+            "in": "body",
+            "name": "dapp",
+            "description": "DApp data to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DApp updated successfully"
+          },
+          "404": {
+            "description": "DApp not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/units": {
+      "get": {
+        "summary": "Get Dapp Units",
+        "description": "Retrieve units for dapp analytics.",
+        "tags": ["Dapp Analytics"],
+        "responses": {
+          "200": {
+            "description": "Units read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Units read"
+                    },
+                    "output": {
+                      "type": "object",
+                      "properties": {
+                        "units": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": [
+                            "Wallets",
+                            "Transferred tokens",
+                            "Number of interactions"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/{id}/abi/events": {
+      "get": {
+        "summary": "Get Dapp ABI Events",
+        "description": "Retrieve events from the dapp ABI.",
+        "tags": ["Dapp Analytics"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the dapp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dapp ABI events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "docs": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid UUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dApps found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "No dApps found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to connect to backend service"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/dapp/{id}/abi/calls": {
+      "get": {
+        "summary": "Get Dapp ABI Calls",
+        "description": "Retrieve calls from the dapp ABI.",
+        "tags": ["Dapp Analytics"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the dapp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dapp ABI functions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "selector": {
+                          "type": "string"
+                        },
+                        "mutates": {
+                          "type": "boolean"
+                        },
+                        "payable": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid UUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dApps found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "No dApps found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to connect to backend service"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/data/{id}/{metric}": {
+      "post": {
+        "tags": ["Dapp Analytics"],
+        "summary": "Retrieve dApp data metrics",
+        "description": "Retrieve data metrics for a specific dApp.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "dApp ID"
+          },
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Metric to retrieve (e.g., 'wallets', 'transferredTokens', 'interactions')"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DAppMetricsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved dApp data metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DAppMetricsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/start-indexer": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Start the DApp Indexer",
+        "description": "Initiates the indexing process for DApp analytics.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "startIndexerRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StartIndexerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexer started successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dapp-analytics/stop-indexer": {
+      "post": {
+        "tags": ["DApp Management"],
+        "summary": "Stop the DApp Indexer",
+        "description": "Stops the indexing process for DApp analytics.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "stopIndexerRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StartIndexerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indexer stopped successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/blockchain/all": {
+      "get": {
+        "tags": ["Blockchains"],
+        "summary": "Get all blockchains",
+        "description": "Retrieve all blockchains from the system.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": true,
+            "description": "Filter blockchains by active status"
+          },
+          {
+            "name": "growthindex",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Filter blockchains by growth index"
+          },
+          {
+            "name": "dappgrowth",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Filter blockchains by DApp growth"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of blockchains",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Blockchain"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/blockchain/{slug}": {
+      "get": {
+        "tags": ["Blockchains"],
+        "summary": "Get a blockchain by slug",
+        "description": "Retrieve a single blockchain by its slug.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Slug of the blockchain to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single blockchain",
+            "schema": {
+              "$ref": "#/definitions/Blockchain"
+            }
+          },
+          "404": {
+            "description": "Blockchain not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "tags": ["healthcheck"],
@@ -206,6 +792,283 @@
     }
   },
   "definitions": {
+    "DAppData": {
+      "type": "object",
+      "required": ["name", "blockchain", "abis"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "blockchain": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "addedBy": {
+          "type": "string"
+        },
+        "abis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "abi": {
+                "type": "object"
+              }
+            },
+            "required": ["name", "address", "abi"]
+          }
+        }
+      }
+    },
+    "DApp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "blockchain": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "addedBy": {
+          "type": "string"
+        },
+        "abis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "abi": {
+                "type": "object"
+              }
+            },
+            "required": ["name", "address", "abi"]
+          }
+        }
+      }
+    },
+    "Blockchain": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the blockchain"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the blockchain"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Active status of the blockchain"
+        },
+        "dapp_growth_index": {
+          "type": "boolean",
+          "description": "DApp growth index of the blockchain"
+        },
+        "defi_growth_index": {
+          "type": "boolean",
+          "description": "DeFi growth index of the blockchain"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icon URL of the blockchain"
+        },
+        "slug": {
+          "type": "string",
+          "description": "Slug of the blockchain"
+        }
+      }
+    },
+    "DappAbiEvent": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "docs": {
+          "type": "string"
+        }
+      }
+    },
+    "DappAbiFunction": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "selector": {
+          "type": "string"
+        },
+        "mutates": {
+          "type": "boolean"
+        },
+        "payable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DAppMetricsRequest": {
+      "type": "object",
+      "properties": {
+        "breakdown": {
+          "type": "boolean",
+          "default": false
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["call", "event"]
+              },
+              "args": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["integer", "string", "boolean"]
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "operator": {
+                            "type": "string",
+                            "enum": [">", "<", ">=", "<=", "=", "!="]
+                          },
+                          "value": {
+                            "type": ["number", "string", "boolean"]
+                          }
+                        }
+                      }
+                    },
+                    "value": {
+                      "type": ["string", "boolean"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "DAppMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "day": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2024-03-17T00:00:00.000Z"
+        },
+        "uwalletCount": {
+          "type": "integer",
+          "example": 1
+        },
+        "wallets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "example": "5CowKUxKYMBnTD4boJLFCxxd42w7NURahd4pYd9dygBFdQV5"
+              }
+            }
+          }
+        },
+        "contract": {
+          "type": "string",
+          "example": "5DG2wPtGcUJgBAWnym8t4swYvmwg2XJuY1ZEhv1EDwJPCj1W"
+        }
+      }
+    },
+    "StartIndexerRequest": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The UUID for the indexer"
+        },
+        "fromBlock": {
+          "type": "integer",
+          "nullable": true,
+          "description": "The block number from which to start indexing. Can be null."
+        }
+      }
+    },
     "Input": {
       "required": ["input"],
       "properties": {

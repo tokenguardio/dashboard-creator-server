@@ -589,6 +589,9 @@
         "title": {
           "type": "string"
         },
+        "dappId": {
+          "type": "string"
+        },
         "theme": {
           "$ref": "#/definitions/Theme"
         }

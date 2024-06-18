@@ -1,27 +1,13 @@
-# Development Dockerfile used with docker-compose 
-FROM node:16
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Install libcurl4-openssl-dev and libssl-dev to satisfy library dependencies
-RUN apt-get update && apt-get install -y libcurl4-openssl-dev libssl-dev
-
-# Copy package.json and yarn.lock files first
-COPY package*.json yarn.lock ./
-
-# Install dependencies
+COPY package*.json ./
 RUN npm install
+RUN npm install -g ts-node-dev
 
-# Install migrate-mongo globally
-RUN npm install -g migrate-mongo
+COPY ./ ./
+RUN npm run build
 
-COPY . .
-
-# Make your script executable
-RUN chmod +x /app/scripts/docker/local-run.sh
-
-# Expose the port your application will run on
-EXPOSE 8080
-
-# Specify the command to start your application
-CMD [ "npm", "start" ]
+EXPOSE 8082
+CMD [ "npm", "start:dev" ]

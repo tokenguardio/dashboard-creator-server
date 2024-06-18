@@ -11,7 +11,7 @@ export const getAllDatabases = async (req: Request, res: Response) => {
     const response = await axios.get(`${API_BASE_URL}/databases`);
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
-    console.error('Error fetching databases:', error);
+    logger.error('Error fetching databases:', error);
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: 'Error fetching databases' });
@@ -26,7 +26,7 @@ export const getAllSchemas = async (req: Request, res: Response) => {
     );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
-    console.error('Error fetching schemas:', error);
+    logger.error('Error fetching schemas:', error);
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: 'Error fetching schemas' });
@@ -41,7 +41,7 @@ export const getAllTables = async (req: Request, res: Response) => {
     );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
-    console.error('Error fetching tables:', error);
+    logger.error('Error fetching tables:', error);
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: 'Error fetching tables' });

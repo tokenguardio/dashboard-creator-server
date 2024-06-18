@@ -27,7 +27,8 @@
       "@db": ["./db.ts"],
       "@core/*": ["core/*"],
       "@components/*": ["components/*"],
-      "@config/*": ["config/*"]
+      "@config/*": ["config/*"],
+      "@preload-data/*": ["preload-data/*"]
     },
     "plugins": [{ "transform": "ts-optchain/transform" }]
   },

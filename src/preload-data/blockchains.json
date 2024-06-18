@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Aleph Zero",
+    "network": "Mainnet",
+    "slug": "aleph-zero",
+    "logo": "https://tokenguard-prod-tgv2-server-staticfiles.s3.eu-west-1.amazonaws.com/blockchain-logo/svg/aleph-zero.svg",
+    "active": true,
+    "growthindex": true,
+    "dappgrowth": true,
+    "database": "azero_mainnet"
+  }
+]
