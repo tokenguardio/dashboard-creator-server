@@ -1,6 +1,7 @@
 import logger from '@core/utils/logger';
 import config from '@config/config';
 import mongoose from 'mongoose';
+import { disconnect } from 'process';
 
 const connect = async () => {
   try {
@@ -29,4 +30,4 @@ const connect = async () => {
   }
 };
 
-export default { connect };
+export default { connect, disconnect: mongoose.disconnect };

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import httpStatus from 'http-status';
+import httpStatus, { OK } from 'http-status';
 import axios from 'axios';
 import logger from '@core/utils/logger';
 import { IDAppData } from './dapp-analytics.interface';
@@ -213,6 +213,7 @@ export const getDapp = async (
 ): Promise<Response> => {
   const { id } = req.params;
   const { data: dappData, error: dappError } = await fetchDappById(id);
+  const { output: indexingProgress } = await fetchDappIndexingStatus(id);
 
   if (dappError) {
     return res.status(dappError.status).json({ message: dappError.message });
@@ -232,6 +233,7 @@ export const getDapp = async (
         containerStatus: relatedContainer
           ? relatedContainer.State
           : 'not found',
+        indexingStatus: indexingProgress.status.height,
       };
 
       if (responseData.containerStatus === 'not found') {
@@ -281,6 +283,37 @@ export async function fetchDappById(id) {
   }
 }
 
+export async function fetchDappIndexingStatus(id: string) {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    if (response.status === 200) {
+      return response.data;
+    }
+    return {
+      error: {
+        status: response.status,
+        message: response.data.message || 'DApp not found',
+      },
+    };
+  } catch (error) {
+    logger.error(`Error retrieving DApp status with id ${id}:`, error);
+    if (error.response) {
+      return {
+        error: {
+          status: error.response.status,
+          message:
+            error.response.data.message || 'Error retrieving DApp status',
+        },
+      };
+    }
+    return {
+      error: { status: 500, message: 'Failed to connect to backend service' },
+    };
+  }
+}
+
 export const getAllDapps = async (
   req: Request,
   res: Response,
@@ -300,16 +333,22 @@ export const getAllDapps = async (
       filters: JSON.stringify(filters),
     });
 
-    const dAppsWithStatus = dApps.map((dApp) => {
-      const relatedContainer = containers.find(
-        (container) =>
-          container.Labels && container.Labels['dapp-id'] === dApp.id,
-      );
-      return {
-        ...dApp,
-        status: relatedContainer ? relatedContainer.State : 'not found',
-      };
-    });
+    const dAppsWithStatus = await Promise.all(
+      dApps.map(async (dApp) => {
+        const { output: indexingProgress } = await fetchDappIndexingStatus(
+          dApp.id,
+        );
+        const relatedContainer = containers.find(
+          (container) =>
+            container.Labels && container.Labels['dapp-id'] === dApp.id,
+        );
+        return {
+          ...dApp,
+          status: relatedContainer ? relatedContainer.State : 'not found',
+          indexingStatus: indexingProgress.status.height,
+        };
+      }),
+    );
 
     return res.status(200).json(dAppsWithStatus);
   } catch (error) {
@@ -477,14 +516,37 @@ export const getDappDataMetrics = async (
     }
 
     return res.status(response.status).json({
-      message: 'Failed to read dApp data',
-      details: response.data,
+      message: response.data.message || 'Failed to read dApp data',
     });
   } catch (error) {
     logger.error('Error in adding new DApp', error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
-      message: 'Failed to add new DApp',
-      error: error.message,
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to connect to backend service',
+    });
+  }
+};
+
+export const getIndexerStatus = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id } = req.params;
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    if (response.status === 200) {
+      return res
+        .status(OK)
+        .send({ message: 'dApp indexer status read', output: response.data });
+    }
+    return res.status(response.status).json({
+      message: response.data.message || 'Failed to read dApp indexing status',
+    });
+  } catch (error) {
+    logger.error('Failed to read dApp indexing status', error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to connect to backend service',
     });
   }
 };
