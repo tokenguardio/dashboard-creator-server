@@ -10,6 +10,7 @@ import {
   getDappAbiCalls,
   getDappDataMetrics,
   stopDappIndexer,
+  getIndexerStatus,
 } from './dapp-analytics.controller';
 import validate from '../../middleware/joiValidate';
 import {
@@ -21,6 +22,7 @@ import {
   getDappAbiCallsValidation,
   dappDataMetricsValidation,
   stopIndexerValidation,
+  getIndexerStatusValidation,
 } from './dapp-analytics.validation';
 
 const router: Router = Router();
@@ -68,6 +70,12 @@ router.post(
   '/dapp-analytics/stop-indexer',
   validate(stopIndexerValidation),
   stopDappIndexer,
+);
+
+router.get(
+  '/dapp-analytics/indexer-status/:dAppId',
+  validate(getIndexerStatusValidation),
+  getIndexerStatus,
 );
 
 export default router;

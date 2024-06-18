@@ -131,6 +131,34 @@
         }
       }
     },
+    "/api/dapp-analytics/dapp/{id}/status": {
+      "get": {
+        "tags": ["DApp Management"],
+        "summary": "Get a DApp indexing status",
+        "description": "Retrieve a single DApp indexing progress.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID of the DApp to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single DApp indexing status"
+          },
+          "404": {
+            "description": "DApp not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/dapp-analytics/units": {
       "get": {
         "summary": "Get Dapp Units",
