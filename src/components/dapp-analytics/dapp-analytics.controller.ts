@@ -213,7 +213,16 @@ export const getDapp = async (
 ): Promise<Response> => {
   const { id } = req.params;
   const { data: dappData, error: dappError } = await fetchDappById(id);
-  const { output: indexingProgress } = await fetchDappIndexingStatus(id);
+  let indexingStatus = 0;
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    indexingStatus =
+      response.status === 200 ? response.data.output.status.height : 0;
+  } catch (error) {
+    logger.error(`Error retrieving DApp status with id ${id}:`, error);
+  }
 
   if (dappError) {
     return res.status(dappError.status).json({ message: dappError.message });
@@ -233,7 +242,7 @@ export const getDapp = async (
         containerStatus: relatedContainer
           ? relatedContainer.State
           : 'not found',
-        indexingStatus: indexingProgress.status.height,
+        indexingStatus,
       };
 
       if (responseData.containerStatus === 'not found') {
@@ -288,26 +297,8 @@ export async function fetchDappIndexingStatus(id: string) {
     const response = await axios.get(
       `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
     );
-    if (response.status === 200) {
-      return response.data;
-    }
-    return {
-      error: {
-        status: response.status,
-        message: response.data.message || 'DApp not found',
-      },
-    };
+    return response.data;
   } catch (error) {
-    logger.error(`Error retrieving DApp status with id ${id}:`, error);
-    if (error.response) {
-      return {
-        error: {
-          status: error.response.status,
-          message:
-            error.response.data.message || 'Error retrieving DApp status',
-        },
-      };
-    }
     return {
       error: { status: 500, message: 'Failed to connect to backend service' },
     };
@@ -320,6 +311,7 @@ export const getAllDapps = async (
 ): Promise<Response> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/dapp-analytics/dapp/all`);
+
     if (response.status !== 200) {
       return res.status(response.status).json({
         message: response.data.message || 'No DApps found',
@@ -335,9 +327,14 @@ export const getAllDapps = async (
 
     const dAppsWithStatus = await Promise.all(
       dApps.map(async (dApp) => {
-        const { output: indexingProgress } = await fetchDappIndexingStatus(
-          dApp.id,
-        );
+        let indexingStatus = 0;
+        try {
+          const response = await axios.get(
+            `${API_BASE_URL}/dapp-analytics/dapp/${dApp.id}/status`,
+          );
+          indexingStatus =
+            response.status === 200 ? response.data.output.status.height : 0;
+        } catch (error) {}
         const relatedContainer = containers.find(
           (container) =>
             container.Labels && container.Labels['dapp-id'] === dApp.id,
@@ -345,7 +342,7 @@ export const getAllDapps = async (
         return {
           ...dApp,
           status: relatedContainer ? relatedContainer.State : 'not found',
-          indexingStatus: indexingProgress.status.height,
+          indexingStatus,
         };
       }),
     );
