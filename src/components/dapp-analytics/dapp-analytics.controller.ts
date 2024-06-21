@@ -396,17 +396,17 @@ const extractAbiEvents = function (
 const extractAbiFunctions = function (
   contractAbi: IAbi,
 ): IAbiCallsOutputContractCall[] {
-  // Extract messages (calls)
-  const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages.map(
-    (message: IAbiMessage) => ({
+  // Extract messages (calls) that mutate the blockchain state
+  const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages
+    .filter((message: IAbiMessage) => message.mutates)
+    .map((message: IAbiMessage) => ({
       name: message.label,
       selector: message.selector,
       args: message.args.map((arg: IAbiArg) => ({
         name: arg.label,
         type: resolveType(arg.type.type, contractAbi.types),
       })),
-    }),
-  );
+    }));
   return calls;
 };
 
