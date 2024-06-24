@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodata:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=dbapi
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5433"
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+  creator-client:
+    build:
+      context: ./dashboard-creator-client
+      dockerfile: localhost.Dockerfile
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./dashboard-creator-client:/app/
+      - /app/node_modules
+    environment:
+      - PORT=5173
+      - VITE_API_BASE_URL=http://localhost:8081
+    depends_on:
+      - creator-server
+  creator-server:
+    build:
+      context: ./dashboard-creator-server
+      dockerfile: Dockerfile
+    restart: always
+    command: 'npm run server:dev'
+    ports:
+      - 8081:8081
+    environment:
+      - NODE_ENV=development
+      - PORT=8081
+      - API_KEY_TOKEN=token
+      - MONGODB_URL=mongodb://mongo:mongo@mongodb:27017
+      - MONGODB_DB_NAME=dc-db
+      - CLIENT_URL=http://localhost:5173
+      - API_BASE_URL=http://db-api:8082
+      # - API_BASE_URL=https://db-api.dev.tokenguard.io
+    volumes:
+      - './dashboard-creator-server/src:/app/src'
+      - './dashboard-creator-server/scripts/db:/app/scripts/db'
+    depends_on:
+      - mongodb
+      - db-api
+  db-api:
+    image: patternsjrojek/db-api:v1.3.0
+    ports:
+      - "8082:8082"
+    command: npm run watch-node
+    volumes:
+      - ./db-api:/app
+    environment:
+      - QUERIES_DB_HOST=postgres
+      - QUERIES_DB_USER=postgres
+      - QUERIES_DB_PASSWORD=postgres
+      - QUERIES_DB_NAME=dbapi
+      - QUERIES_DB_PORT=5433
+      - DATA_DB_HOST=tokenguard-prod-postgres-external.c3g7cciretfk.eu-west-1.rds.amazonaws.com
+      - DATA_DB_USER=w3ftest
+      - DATA_DB_PASSWORD=w3ftest
+      - DATA_DB_NAMES=crosschain
+      - DATA_DB_PORT=5432
+      - PORT=8082
+    depends_on:
+      - postgres
+volumes:
+  mongodata:
+  postgresdata:
