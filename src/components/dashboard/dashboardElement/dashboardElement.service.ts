@@ -1,13 +1,13 @@
 import httpStatus from 'http-status';
 import AppError from '@core/utils/appError';
 import logger from '@core/utils/logger';
-import { v4 as uuidv4 } from 'uuid';
 import {
   DashboardElementModel,
   DashboardElementButtonModel,
   DashboardElementTextModel,
   DashboardElementBasicQueryModel,
   DashboardElementCustomQueryModel,
+  DashboardElementDappAnalyticsModel,
 } from './dashboardElement.model';
 import {
   IDashboardElement,
@@ -15,6 +15,7 @@ import {
   IDashboardElementButton,
   IDashboardElementBasicQuery,
   IDashboardElementCustomQuery,
+  IDashboardElementDappAnalytics,
 } from './dashboardElement.interface';
 
 const createDashboardElement = async (
@@ -42,6 +43,11 @@ const createDashboardElement = async (
       case 'customQuery':
         newElement = await DashboardElementCustomQueryModel.create(
           elementData as IDashboardElementCustomQuery,
+        );
+        break;
+      case 'dappAnalytics':
+        newElement = await DashboardElementDappAnalyticsModel.create(
+          elementData as IDashboardElementDappAnalytics,
         );
         break;
       default:
@@ -81,6 +87,8 @@ const getDashboardElement = async (
       return element as IDashboardElementBasicQuery;
     case 'customQuery':
       return element as IDashboardElementCustomQuery;
+    case 'dappAnalytics':
+      return element as IDashboardElementDappAnalytics;
     default:
       throw new AppError(
         httpStatus.INTERNAL_SERVER_ERROR,
@@ -135,6 +143,13 @@ const updateDashboardElement = async (
           { new: true },
         );
         break;
+      case 'dappAnalytics':
+        await DashboardElementDappAnalyticsModel.findByIdAndUpdate(
+          elementId,
+          elementData as IDashboardElementDappAnalytics,
+          { new: true },
+        );
+        break;
       default:
         throw new AppError(
           httpStatus.BAD_REQUEST,
@@ -163,3 +178,4 @@ export {
   updateDashboardElement,
   deleteDashboardElement,
 };
+

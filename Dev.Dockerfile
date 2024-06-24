@@ -1,12 +1,13 @@
-FROM node:16
+FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y libcurl4-openssl-dev libssl-dev
-COPY package.json ./
+COPY package*.json ./
 RUN npm install
-RUN npm install -g migrate-mongo
+RUN npm install -g ts-node-dev
 
-COPY . .
-EXPOSE 8081
-CMD [ "npm", "run", "server:dev" ]
+COPY ./ ./
+RUN npm run build
+
+EXPOSE 8082
+ENTRYPOINT [ "sh", "entrypoint.sh" ]

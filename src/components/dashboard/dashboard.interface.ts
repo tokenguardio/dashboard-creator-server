@@ -4,6 +4,7 @@ import { IDashboardFilter } from '@components/dashboard/dashboardFilter/dashboar
 
 interface IDashboard extends Document {
   title: string;
+  dappId?: string;
   elements?: IDashboardElement[];
   layout?: ILayoutItem[];
   theme: ITheme;
@@ -36,6 +37,7 @@ interface ITheme extends Document {
 
 interface IWriteDashboard extends Document {
   title?: string;
+  dappId?: string;
   theme?: ITheme;
   layout?: ILayoutItem[];
   elements?: IDashboardElement[];
