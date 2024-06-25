@@ -17,6 +17,7 @@ import {
 } from './abi.interface';
 import { resolveType } from './substrate-types.mapping';
 import { docker } from 'server';
+import DAPP_ANALYTICS_NETWORKS from './../../config/dapp-analytics-networks';
 
 const { API_BASE_URL } = process.env;
 
@@ -70,8 +71,20 @@ export const startDappIndexer = async (
     return res.status(dappError.status).json({ message: dappError.message });
   }
 
-  const date = new Date(dappData.created_at);
-  const timestamp = date.getTime();
+  if (!DAPP_ANALYTICS_NETWORKS[dappData.blockchain]) {
+    const message = `Blockchain network '${dappData.blockchain}' is not supported.`;
+    logger.error(message);
+    return res.status(httpStatus.BAD_REQUEST).json({ message });
+  }
+
+  const networkConfig = DAPP_ANALYTICS_NETWORKS[dappData.blockchain];
+  const timestamp = new Date(dappData.created_at).getTime();
+
+  const imageVersion =
+    networkConfig.type === 'substrate'
+      ? 'wasabi-substrate-latest'
+      : 'wasabi-evm-latest';
+  const image = `patternsjrojek/subsquid-squids:${imageVersion}`;
 
   try {
     let container;
@@ -90,8 +103,8 @@ export const startDappIndexer = async (
       }
     } catch (error) {
       if (error.statusCode === 404) {
-        container = await docker.createContainer({
-          Image: 'patternsjrojek/subsquid-squids:wasabi-latest',
+        const containerOptions = {
+          Image: image,
           name: containerName,
           Labels: {
             'managed-by': 'dapp-analytics',
@@ -104,13 +117,14 @@ export const startDappIndexer = async (
             'DB_USER=squid',
             'DB_PASS=postgres',
             'DB_PORT=5432',
-            'RPC_ENDPOINT=https://aleph-zero-rpc.dwellir.com',
-            'SS58_NETWORK=substrate',
-            'ARCHIVE_NAME=aleph-zero',
-            'RPC_INGESTION_DISABLED=true',
+            `RPC_ENDPOINT=${networkConfig.rpcEndpoint}`,
+            `SS58_NETWORK=${networkConfig.ss58Network}`,
+            `GATEWAY_URL=${networkConfig.gatewayUrl}`,
+            `RPC_INGESTION_DISABLED=${networkConfig.rpcIngestionDisabled}`,
             `CREATED_TIMESTAMP=${timestamp}`,
           ],
-        });
+        };
+        container = await docker.createContainer(containerOptions);
         await container.start();
         message = `New container created and started: ${containerName}`;
         logger.info(message);
