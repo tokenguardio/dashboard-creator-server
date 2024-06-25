@@ -26,6 +26,9 @@ async function main() {
     logger.info('Blockchains loaded successfully.');
   } catch (error) {
     logger.error('Error loading blockchains:', error);
+  } finally {
+    await db.disconnect();
+    process.exit(0);
   }
 }
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import httpStatus from 'http-status';
+import httpStatus, { OK } from 'http-status';
 import axios from 'axios';
 import logger from '@core/utils/logger';
 import { IDAppData } from './dapp-analytics.interface';
@@ -227,6 +227,16 @@ export const getDapp = async (
 ): Promise<Response> => {
   const { id } = req.params;
   const { data: dappData, error: dappError } = await fetchDappById(id);
+  let indexingStatus = 0;
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    indexingStatus =
+      response.status === 200 ? response.data.output.status.height : 0;
+  } catch (error) {
+    logger.error(`Error retrieving DApp status with id ${id}:`, error);
+  }
 
   if (dappError) {
     return res.status(dappError.status).json({ message: dappError.message });
@@ -246,6 +256,7 @@ export const getDapp = async (
         containerStatus: relatedContainer
           ? relatedContainer.State
           : 'not found',
+        indexingStatus,
       };
 
       if (responseData.containerStatus === 'not found') {
@@ -295,12 +306,26 @@ export async function fetchDappById(id) {
   }
 }
 
+export async function fetchDappIndexingStatus(id: string) {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      error: { status: 500, message: 'Failed to connect to backend service' },
+    };
+  }
+}
+
 export const getAllDapps = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/dapp-analytics/dapp/all`);
+
     if (response.status !== 200) {
       return res.status(response.status).json({
         message: response.data.message || 'No DApps found',
@@ -314,16 +339,27 @@ export const getAllDapps = async (
       filters: JSON.stringify(filters),
     });
 
-    const dAppsWithStatus = dApps.map((dApp) => {
-      const relatedContainer = containers.find(
-        (container) =>
-          container.Labels && container.Labels['dapp-id'] === dApp.id,
-      );
-      return {
-        ...dApp,
-        status: relatedContainer ? relatedContainer.State : 'not found',
-      };
-    });
+    const dAppsWithStatus = await Promise.all(
+      dApps.map(async (dApp) => {
+        let indexingStatus = 0;
+        try {
+          const response = await axios.get(
+            `${API_BASE_URL}/dapp-analytics/dapp/${dApp.id}/status`,
+          );
+          indexingStatus =
+            response.status === 200 ? response.data.output.status.height : 0;
+        } catch (error) {}
+        const relatedContainer = containers.find(
+          (container) =>
+            container.Labels && container.Labels['dapp-id'] === dApp.id,
+        );
+        return {
+          ...dApp,
+          status: relatedContainer ? relatedContainer.State : 'not found',
+          indexingStatus,
+        };
+      }),
+    );
 
     return res.status(200).json(dAppsWithStatus);
   } catch (error) {
@@ -358,10 +394,6 @@ export const getDappUnits = async (
 const extractAbiEvents = function (
   contractAbi: IAbi,
 ): IAbiEventsOutputContractEvent[] {
-  contractAbi.spec.events.map((event: IAbiMessage) => {
-    logger.info(event.label);
-  });
-  logger.info(`Events: ${contractAbi.spec.events.length}`);
   // Extract events
   const events: IAbiEventsOutputContractEvent[] = contractAbi.spec.events.map(
     (event: IAbiEvent) => ({
@@ -378,18 +410,17 @@ const extractAbiEvents = function (
 const extractAbiFunctions = function (
   contractAbi: IAbi,
 ): IAbiCallsOutputContractCall[] {
-  // Extract messages (calls)
-  logger.info(JSON.stringify(contractAbi.types, null, 2));
-  const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages.map(
-    (message: IAbiMessage) => ({
+  // Extract messages (calls) that mutate the blockchain state
+  const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages
+    .filter((message: IAbiMessage) => message.mutates)
+    .map((message: IAbiMessage) => ({
       name: message.label,
       selector: message.selector,
       args: message.args.map((arg: IAbiArg) => ({
         name: arg.label,
         type: resolveType(arg.type.type, contractAbi.types),
       })),
-    }),
-  );
+    }));
   return calls;
 };
 
@@ -405,7 +436,6 @@ export const getDappAbiEvents = async (
     if (response.status === 200) {
       let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
       const dapp = response.data;
-      logger.info(`DApp: ${dapp.name} abis available: ${dapp.abis.length}`);
       for (const contract of dapp.abis) {
         const dAppContract: IAbiEventsOutputContract = {
           name: contract.name,
@@ -444,7 +474,6 @@ export const getDappAbiCalls = async (
     if (response.status === 200) {
       let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
       const dapp = response.data;
-      logger.info(`DApp: ${dapp.name} abis available: ${dapp.abis.length}`);
 
       for (const contract of dapp.abis) {
         const dAppContract: IAbiCallsOutputContract = {
@@ -491,14 +520,37 @@ export const getDappDataMetrics = async (
     }
 
     return res.status(response.status).json({
-      message: 'Failed to read dApp data',
-      details: response.data,
+      message: response.data.message || 'Failed to read dApp data',
     });
   } catch (error) {
     logger.error('Error in adding new DApp', error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send({
-      message: 'Failed to add new DApp',
-      error: error.message,
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to connect to backend service',
+    });
+  }
+};
+
+export const getIndexerStatus = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id } = req.params;
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
+    );
+    if (response.status === 200) {
+      return res
+        .status(OK)
+        .send({ message: 'dApp indexer status read', output: response.data });
+    }
+    return res.status(response.status).json({
+      message: response.data.message || 'Failed to read dApp indexing status',
+    });
+  } catch (error) {
+    logger.error('Failed to read dApp indexing status', error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to connect to backend service',
     });
   }
 };

@@ -63,6 +63,14 @@ export const getDappByIdValidation = {
   }),
 };
 
+export const getIndexerStatusValidation = {
+  params: Joi.object({
+    id: Joi.string()
+      .guid({ version: ['uuidv4'] })
+      .required(),
+  }),
+};
+
 export const updateDappValidation = {
   getDappByIdValidation,
   body: Joi.object({
