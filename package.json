@@ -1,7 +1,7 @@
 {
   "name": "dashboard-creator-server",
   "private": false,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "license": "MIT",
   "main": "src/server.ts",
   "engines": {
