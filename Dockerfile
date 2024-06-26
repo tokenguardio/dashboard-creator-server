@@ -13,4 +13,5 @@ COPY --chown=node:node . .
 RUN npm run build
 EXPOSE 8080
 ENTRYPOINT [ "sh", "entrypoint.sh" ]
+CMD ["npm", "run", "start:prod"]
 

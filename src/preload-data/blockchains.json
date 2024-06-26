@@ -8,5 +8,15 @@
     "growthindex": true,
     "dappgrowth": true,
     "database": "azero_mainnet"
+  },
+  {
+    "name": "Astar",
+    "network": "Mainnet",
+    "slug": "astar",
+    "logo": "https://tokenguard-prod-tgv2-server-staticfiles.s3.eu-west-1.amazonaws.com/blockchain-logo/svg/astar.svg",
+    "active": true,
+    "growthindex": true,
+    "dappgrowth": true,
+    "database": "astar_mainnet"
   }
 ]
