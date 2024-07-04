@@ -213,7 +213,8 @@ export const startDappIndexerPod = async (
       ? 'wasabi-substrate-latest'
       : 'wasabi-evm-latest';
   const image = `patternsjrojek/subsquid-squids:${imageVersion}`;
-  const podManifest: V1Pod = {
+
+  const podManifest = {
     apiVersion: 'v1',
     kind: 'Pod',
     metadata: {
@@ -253,7 +254,7 @@ export const startDappIndexerPod = async (
   try {
     const { body: existingPod } = await k8sApi.readNamespacedPod(
       podName,
-      'default',
+      'dapp-analytics',
     );
 
     if (
@@ -261,9 +262,9 @@ export const startDappIndexerPod = async (
       existingPod.status &&
       existingPod.status.phase !== 'Running'
     ) {
-      await k8sApi.deleteNamespacedPod(podName, 'default');
+      await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
       const { body: startedPod } = await k8sApi.createNamespacedPod(
-        'default',
+        'dapp-analytics',
         podManifest,
       );
       logger.info(`Pod restarted: ${podName}`);
@@ -280,7 +281,7 @@ export const startDappIndexerPod = async (
   } catch (error) {
     if (error.response?.statusCode === 404) {
       const { body: newPod } = await k8sApi.createNamespacedPod(
-        'default',
+        'dapp-analytics',
         podManifest,
       );
       logger.info(`New pod created: ${podName}`);
@@ -306,7 +307,7 @@ export const stopDappIndexerPod = async (
   const podName = `indexer-${id}`;
 
   try {
-    await k8sApi.deleteNamespacedPod(podName, 'default');
+    await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics'); // Corrected namespace
     logger.info(`Pod stopped (deleted): ${podName}`);
     return res.status(200).json({
       message: `Pod ${podName} has been successfully stopped (deleted)`,
