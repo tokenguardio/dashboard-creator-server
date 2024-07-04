@@ -14,7 +14,7 @@ import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import cors from 'cors';
 
 const opts = {
-  origin: [config.clientUrl],
+  origin: [config.clientUrl, config.tgServerUrl, config.tgClientUrl],
 };
 
 const app: Application = express();

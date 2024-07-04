@@ -46,5 +46,7 @@ export default {
   mongoUrl: envVars.MONGODB_URL,
   mongoDbName: envVars.MONGODB_DB_NAME,
   clientUrl: envVars.CLIENT_URL,
+  tgServerUrl: envVars.TG_SERVER_URL,
+  tgClientUrl: envVars.TG_CLIENT_URL,
   tlsCAFile: envVars.DB_TLS_CA_CERT_FILE,
 };
