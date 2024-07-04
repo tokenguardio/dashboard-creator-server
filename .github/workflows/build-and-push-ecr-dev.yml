@@ -4,7 +4,7 @@ on:
   push:
     branches: ['dev', 'dapp-analytics-dev']
   pull_request:
-    branches: ['dev', dapp-analytics-dev]
+    branches: ['dev', 'dapp-analytics-dev']
   workflow_dispatch:
 
 env:
