@@ -4,12 +4,14 @@ import {
   updateDapp,
   getDapp,
   getAllDapps,
-  startDappIndexer,
+  startDappIndexerDocker,
+  stopDappIndexerDocker,
+  startDappIndexerPod,
+  stopDappIndexerPod,
   getDappUnits,
   getDappAbiEvents,
   getDappAbiCalls,
   getDappDataMetrics,
-  stopDappIndexer,
   getIndexerStatus,
 } from './dapp-analytics.controller';
 import validate from '../../middleware/joiValidate';
@@ -24,6 +26,7 @@ import {
   stopIndexerValidation,
   getIndexerStatusValidation,
 } from './dapp-analytics.validation';
+import config from '@config/config';
 
 const router: Router = Router();
 
@@ -63,13 +66,17 @@ router.post(
 router.post(
   '/dapp-analytics/start-indexer',
   validate(runIndexerValidation),
-  startDappIndexer,
+  config.deploymentMode === 'kubernetes'
+    ? startDappIndexerPod
+    : startDappIndexerDocker,
 );
 
 router.post(
   '/dapp-analytics/stop-indexer',
   validate(stopIndexerValidation),
-  stopDappIndexer,
+  config.deploymentMode === 'kubernetes'
+    ? stopDappIndexerPod
+    : stopDappIndexerDocker,
 );
 
 router.get(

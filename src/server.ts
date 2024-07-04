@@ -5,9 +5,20 @@ import logger from '@core/utils/logger';
 import errorHandler from 'core/utils/errorHandler';
 import Docker from 'dockerode';
 import db from '@db';
+import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
 
+let docker, k8sApi;
+
+if (config.deploymentMode === 'kubernetes') {
+  const kc = new KubeConfig();
+  kc.loadFromDefault();
+  k8sApi = kc.makeApiClient(CoreV1Api);
+} else {
+  docker = new Docker({ socketPath: '/var/run/docker.sock' });
+}
+
+export { docker, k8sApi };
 const { port } = config;
-export const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
 const server: Server = app.listen(port, async (): Promise<void> => {
   await db.connect();

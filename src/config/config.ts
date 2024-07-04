@@ -18,6 +18,7 @@ const envsSchema = Joi.object()
     API_KEY_TOKEN: Joi.string().required(),
     MONGODB_URL: Joi.string().required(),
     MONGODB_DB_NAME: Joi.string().required(),
+    DEPLOYMENT_MODE: Joi.string().valid('docker', 'kubernetes').required(),
   })
   .unknown(true);
 
@@ -39,4 +40,5 @@ export default {
   xApiKey: envVars.API_KEY_TOKEN,
   mongoUrl: envVars.MONGODB_URL,
   mongoDbName: envVars.MONGODB_DB_NAME,
+  deploymentMode: envVars.DEPLOYMENT_MODE,
 };
