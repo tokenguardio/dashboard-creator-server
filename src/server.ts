@@ -11,7 +11,7 @@ let docker, k8sApi;
 
 if (config.deploymentMode === 'kubernetes') {
   const kc = new KubeConfig();
-  kc.loadFromDefault();
+  kc.loadFromCluster();
   k8sApi = kc.makeApiClient(CoreV1Api);
 } else {
   docker = new Docker({ socketPath: '/var/run/docker.sock' });
