@@ -80,7 +80,7 @@ router.post(
 );
 
 router.get(
-  '/dapp-analytics/indexer-status/:dAppId',
+  '/dapp-analytics/indexer-status/:id',
   validate(getIndexerStatusValidation),
   getIndexerStatus,
 );

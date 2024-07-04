@@ -10,13 +10,13 @@ const connect = async () => {
     const mongoOptions = {
       dbName: config.mongoDbName,
       // Conditionally add the tlsCAFile option if the DB_TLS_CA_CERT_FILE environment variable is provided
-      ...(process.env.DB_TLS_CA_CERT_FILE && {
-        tlsCAFile: process.env.DB_TLS_CA_CERT_FILE,
+      ...(config.tlsCAFile && {
+        tlsCAFile: config.tlsCAFile,
       }),
     };
 
     logger.info(
-      process.env.DB_TLS_CA_CERT_FILE
+      config.tlsCAFile
         ? 'Connecting to MongoDB with CA cert'
         : 'Connecting to MongoDB without CA cert',
     );

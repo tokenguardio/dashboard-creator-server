@@ -2,13 +2,12 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import axios from 'axios';
 import logger from '@core/utils/logger';
+import config from '@config/config';
 import * as chartDataGenerator from './helper/chartDataGenerator';
-
-const { API_BASE_URL } = process.env;
 
 export const getAllDatabases = async (req: Request, res: Response) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/databases`);
+    const response = await axios.get(`${config.dbApiUrl}/databases`);
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
     logger.error('Error fetching databases:', error);
@@ -22,7 +21,7 @@ export const getAllSchemas = async (req: Request, res: Response) => {
   try {
     const { dbname } = req.params;
     const response = await axios.get(
-      `${API_BASE_URL}/database/${encodeURIComponent(dbname)}/schemas`,
+      `${config.dbApiUrl}/database/${encodeURIComponent(dbname)}/schemas`,
     );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
@@ -37,7 +36,7 @@ export const getAllTables = async (req: Request, res: Response) => {
   try {
     const { dbname } = req.params;
     const response = await axios.get(
-      `${API_BASE_URL}/database/${encodeURIComponent(dbname)}/tables`,
+      `${config.dbApiUrl}/database/${encodeURIComponent(dbname)}/tables`,
     );
     res.status(httpStatus.OK).send({ data: response.data });
   } catch (error) {
@@ -52,7 +51,7 @@ export const getTableColumns = async (req: Request, res: Response) => {
   try {
     const { dbname, schema, table } = req.params;
     const response = await axios.get(
-      `${API_BASE_URL}/database/${encodeURIComponent(
+      `${config.dbApiUrl}/database/${encodeURIComponent(
         dbname,
       )}/tables/${encodeURIComponent(schema)}/${encodeURIComponent(
         table,
@@ -115,7 +114,7 @@ export const generateChartData = async (req: Request, res: Response) => {
       parsedFilters,
     });
 
-    const url = `${API_BASE_URL}/group-by-operation/${encodeURIComponent(
+    const url = `${config.dbApiUrl}/group-by-operation/${encodeURIComponent(
       dbname,
     )}/${encodeURIComponent(schema)}/${encodeURIComponent(table)}`;
     const response = await axios.post(url, payload);

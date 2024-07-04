@@ -1,7 +1,7 @@
 {
   "name": "dashboard-creator-server",
   "private": false,
-  "version": "2.0.1",
+  "version": "3.0.1",
   "license": "MIT",
   "main": "src/server.ts",
   "engines": {
@@ -38,7 +38,7 @@
     "cors": "^2.8.5",
     "deepmerge": "^4.3.1",
     "dockerode": "^4.0.2",
-    "dotenv": "^14.3.2",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
     "express-http-context": "^1.2.4",
     "express-mongo-sanitize": "^2.2.0",

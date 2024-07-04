@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 import logger from '@core/utils/logger';
+import config from '@config/config';
 import httpStatus from 'http-status';
 import {
   create,
@@ -38,8 +39,6 @@ import {
   IDashboardFilterDynamic,
 } from '@components/dashboard/dashboardFilter/dashboardFilter.interface';
 
-const { API_BASE_URL } = process.env;
-
 const createDashboard = async (req: Request, res: Response) => {
   try {
     const dashboardData = req.body as IWriteDashboard;
@@ -65,42 +64,71 @@ const getAllDashboards = async (req: Request, res: Response) => {
   }
 };
 
+const prepareFilterQueryPayload = (
+  dashboard: IDashboard,
+  filter: IDashboardFilterDynamic | IDashboardFilterDependent,
+  filterValues: IDashboardFilterValue[],
+): object => {
+  const queryPayload: any = {
+    id: filter.queryId,
+    parameters: {
+      values: [],
+      identifiers: [],
+    },
+  };
+  // Extracting filter names from the filter
+  const filterNames = filter.params;
+  const filteredFilterValues = filterValues.filter((filterValue) =>
+    filterNames.includes(filterValue.name),
+  );
+  filteredFilterValues.forEach((filterValue: any) => {
+    queryPayload.parameters.values.push({
+      name: filterValue.name,
+      value: filterValue.value,
+    });
+  });
+  return queryPayload;
+};
+
 const readDashboard = async (req: Request, res: Response) => {
   try {
     const dashboard = await read(req.params.id);
-    for (const filter of dashboard.filters) {
-      if ('queryId' in filter) {
-        const dynamicFilter = filter as
+    dashboard.filters.forEach(async (dashboardFilter) => {
+      if ('queryId' in dashboardFilter) {
+        const dynamicFilter = dashboardFilter as
           | IDashboardFilterDynamic
           | IDashboardFilterDependent;
         const filterValues = [];
         if ('params' in dynamicFilter && dynamicFilter.params.length > 0) {
-          for (const param of dynamicFilter.params) {
+          dynamicFilter.params.forEach((param) => {
             filterValues.push({ name: param, value: [' '] });
-          }
+          });
         }
         const queryPayload = prepareFilterQueryPayload(
           dashboard,
-          filter as IDashboardFilterDynamic | IDashboardFilterDependent,
+          dashboardFilter as
+            | IDashboardFilterDynamic
+            | IDashboardFilterDependent,
           filterValues,
         );
         logger.info(
           `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
         );
-        const url = `${API_BASE_URL}/execute-query`;
+        const url = `${config.dbApiUrl}/execute-query`;
         const response = await axios.post(url, queryPayload);
         const data = await response.data;
         logger.info(`getFilterData response: ${JSON.stringify(data)}`);
         // Update options field if necessary
         if (data && data.data && Array.isArray(data.data)) {
           // Update options field if necessary
-          filter.options = data.data.map((item: any) => ({
+          // eslint-disable-next-line no-param-reassign
+          dashboardFilter.options = data.data.map((item: any) => ({
             label: item.value,
             value: item.value,
           }));
         }
       }
-    }
+    });
 
     res
       .status(httpStatus.OK)
@@ -219,8 +247,8 @@ const prepareQueryPayload = (
   );
 
   const extractDateRange = (period: string) => {
-    let min_date: string;
-    let max_date: string;
+    let minDate: string;
+    let maxDate: string;
 
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
@@ -243,43 +271,43 @@ const prepareQueryPayload = (
 
     switch (period) {
       case 'last week':
-        min_date = formatDate(calculateMondaysBack(1));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(1));
+        maxDate = formatDate(new Date());
         break;
       case '2 weeks':
-        min_date = formatDate(calculateMondaysBack(2));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(2));
+        maxDate = formatDate(new Date());
         break;
       case 'previous week':
-        min_date = formatDate(calculateMondaysBack(2));
-        max_date = formatDate(calculateMondaysBack(1));
+        minDate = formatDate(calculateMondaysBack(2));
+        maxDate = formatDate(calculateMondaysBack(1));
         break;
       case 'last month':
-        min_date = formatDate(calculateMondaysBack(calculateMondays(30)));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(calculateMondays(30)));
+        maxDate = formatDate(new Date());
         break;
       case '3 months':
-        min_date = formatDate(calculateMondaysBack(calculateMondays(90)));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(calculateMondays(90)));
+        maxDate = formatDate(new Date());
         break;
       case '6 months':
-        min_date = formatDate(calculateMondaysBack(calculateMondays(180)));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(calculateMondays(180)));
+        maxDate = formatDate(new Date());
         break;
       case 'last year':
-        min_date = formatDate(calculateMondaysBack(calculateMondays(365)));
-        max_date = formatDate(new Date());
+        minDate = formatDate(calculateMondaysBack(calculateMondays(365)));
+        maxDate = formatDate(new Date());
         break;
       case 'all time':
-        min_date = '1970-01-01';
-        max_date = formatDate(new Date());
+        minDate = '1970-01-01';
+        maxDate = formatDate(new Date());
         break;
       default:
-        min_date = '1970-01-01';
-        max_date = formatDate(new Date());
+        minDate = '1970-01-01';
+        maxDate = formatDate(new Date());
     }
 
-    return { min_date, max_date };
+    return { minDate, maxDate };
   };
 
   // add default 'space' param for each missing (hidden) param
@@ -294,14 +322,14 @@ const prepareQueryPayload = (
 
   filteredFilterValues.forEach((filter: any) => {
     if (filter.name === 'period') {
-      const { min_date, max_date } = extractDateRange(filter.value);
+      const { minDate, maxDate } = extractDateRange(filter.value);
       queryPayload.parameters.values.push({
         name: 'min_date',
-        value: min_date,
+        value: minDate,
       });
       queryPayload.parameters.values.push({
         name: 'max_date',
-        value: max_date,
+        value: maxDate,
       });
     } else {
       queryPayload.parameters.values.push({
@@ -326,7 +354,7 @@ const getDashboardElementData = async (req: Request, res: Response) => {
       elementId,
     )) as IDashboardElementCustomQuery;
     const queryPayload = prepareQueryPayload(dashboard, element, filterValues);
-    const url = `${API_BASE_URL}/execute-query`;
+    const url = `${config.dbApiUrl}/execute-query`;
     logger.info(
       `sending queryPayload: ${JSON.stringify(
         queryPayload,
@@ -413,32 +441,6 @@ const updateDashboardFilter = async (req: Request, res: Response) => {
   }
 };
 
-const prepareFilterQueryPayload = (
-  dashboard: IDashboard,
-  filter: IDashboardFilterDynamic | IDashboardFilterDependent,
-  filterValues: IDashboardFilterValue[],
-): object => {
-  const queryPayload: any = {
-    id: filter.queryId,
-    parameters: {
-      values: [],
-      identifiers: [],
-    },
-  };
-  // Extracting filter names from the filter
-  const filterNames = filter.params;
-  const filteredFilterValues = filterValues.filter((filterValue) =>
-    filterNames.includes(filterValue.name),
-  );
-  filteredFilterValues.forEach((filterValue: any) => {
-    queryPayload.parameters.values.push({
-      name: filterValue.name,
-      value: filterValue.value,
-    });
-  });
-  return queryPayload;
-};
-
 const getDashboardFilterData = async (req: Request, res: Response) => {
   try {
     const { dashboardId, filterId } = req.params;
@@ -456,7 +458,7 @@ const getDashboardFilterData = async (req: Request, res: Response) => {
       logger.info(
         `getFilterData queryPayload: ${JSON.stringify(queryPayload)}`,
       );
-      const url = `${API_BASE_URL}/execute-query`;
+      const url = `${config.dbApiUrl}/execute-query`;
       const response = await axios.post(url, queryPayload);
 
       res.status(httpStatus.OK).send({
@@ -488,12 +490,12 @@ const getDashboardElementByQueryId = async (req: Request, res: Response) => {
         .send({ message: 'Element not found' });
     }
 
-    res
+    return res
       .status(httpStatus.OK)
       .send({ message: 'Element Retrieved', output: element });
   } catch (err) {
     logger.error(`Error retrieving element: %O`, err);
-    res
+    return res
       .status(err.statusCode || httpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: err.message });
   }

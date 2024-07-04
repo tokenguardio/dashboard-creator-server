@@ -666,7 +666,7 @@ export const getDappDataMetrics = async (
       message: response.data.message || 'Failed to read dApp data',
     });
   } catch (error) {
-    logger.error('Error in adding new DApp', error);
+    logger.error('Error in extracting dApp metrics', error);
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: 'Failed to connect to backend service',
     });

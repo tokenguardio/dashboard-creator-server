@@ -1,5 +1,7 @@
 import Joi from 'joi';
+import * as dotenv from 'dotenv';
 
+dotenv.config({ path: '.localhost.env' });
 // All env variables used by the app should be defined in this file.
 
 // To define new env:
@@ -16,9 +18,12 @@ const envsSchema = Joi.object()
       .required(),
     PORT: Joi.number().default(8080),
     API_KEY_TOKEN: Joi.string().required(),
+    API_BASE_URL: Joi.string().required(),
     MONGODB_URL: Joi.string().required(),
     MONGODB_DB_NAME: Joi.string().required(),
     DEPLOYMENT_MODE: Joi.string().valid('docker', 'kubernetes').required(),
+    CLIENT_URL: Joi.string().required(),
+    DB_TLS_CA_CERT_FILE: Joi.string().optional(),
   })
   .unknown(true);
 
@@ -38,7 +43,12 @@ export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   xApiKey: envVars.API_KEY_TOKEN,
+  dbApiUrl: envVars.API_BASE_URL,
   mongoUrl: envVars.MONGODB_URL,
   mongoDbName: envVars.MONGODB_DB_NAME,
   deploymentMode: envVars.DEPLOYMENT_MODE,
+  clientUrl: envVars.CLIENT_URL,
+  tgServerUrl: envVars.TG_SERVER_URL,
+  tgClientUrl: envVars.TG_CLIENT_URL,
+  tlsCAFile: envVars.DB_TLS_CA_CERT_FILE,
 };
