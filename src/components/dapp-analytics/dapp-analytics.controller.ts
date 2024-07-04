@@ -16,8 +16,9 @@ import {
   IAbiCallsOutputContractCall,
 } from './abi.interface';
 import { resolveType } from './substrate-types.mapping';
-import { docker } from 'server';
+import { docker, k8sApi } from 'server';
 import DAPP_ANALYTICS_NETWORKS from './../../config/dapp-analytics-networks';
+import { V1Pod } from '@kubernetes/client-node';
 
 const { API_BASE_URL } = process.env;
 
@@ -58,7 +59,7 @@ export const saveDapp = async (
   }
 };
 
-export const startDappIndexer = async (
+export const startDappIndexerDocker = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
@@ -150,7 +151,7 @@ export const startDappIndexer = async (
   }
 };
 
-export const stopDappIndexer = async (req, res) => {
+export const stopDappIndexerDocker = async (req, res) => {
   const { id } = req.body;
   const containerName = `indexer-${id}`;
 
@@ -179,6 +180,148 @@ export const stopDappIndexer = async (req, res) => {
       logger.error(`Error stopping container ${containerName}:`, error);
       return res.status(500).json({
         message: `Failed to stop container ${containerName}`,
+        error: error.message,
+      });
+    }
+  }
+};
+
+export const startDappIndexerPod = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id } = req.body;
+  const podName = `indexer-${id}`;
+
+  const { data: dappData, error: dappError } = await fetchDappById(id);
+  if (dappError) {
+    logger.error(`Failed to fetch DApp with id ${id}:`, dappError.message);
+    return res.status(dappError.status).json({ message: dappError.message });
+  }
+
+  if (!DAPP_ANALYTICS_NETWORKS[dappData.blockchain]) {
+    const message = `Blockchain network '${dappData.blockchain}' is not supported.`;
+    logger.error(message);
+    return res.status(httpStatus.BAD_REQUEST).json({ message });
+  }
+
+  const networkConfig = DAPP_ANALYTICS_NETWORKS[dappData.blockchain];
+  const timestamp = new Date(dappData.created_at).getTime();
+
+  const imageVersion =
+    networkConfig.type === 'substrate'
+      ? 'wasabi-substrate-latest'
+      : 'wasabi-evm-latest';
+  const image = `patternsjrojek/subsquid-squids:${imageVersion}`;
+
+  const podManifest = {
+    apiVersion: 'v1',
+    kind: 'Pod',
+    metadata: {
+      name: podName,
+      labels: {
+        'managed-by': 'dapp-analytics',
+        'dapp-id': id.toString(),
+      },
+    },
+    spec: {
+      containers: [
+        {
+          name: podName,
+          image: image,
+          env: [
+            { name: 'DAPP_ID', value: id.toString() },
+            { name: 'DB_HOST', value: 'host.docker.internal' },
+            { name: 'DB_NAME', value: 'dapp_analytics' },
+            { name: 'DB_USER', value: 'squid' },
+            { name: 'DB_PASS', value: 'postgres' },
+            { name: 'DB_PORT', value: '5432' },
+            { name: 'RPC_ENDPOINT', value: networkConfig.rpcEndpoint },
+            { name: 'SS58_NETWORK', value: networkConfig.ss58Network },
+            { name: 'GATEWAY_URL', value: networkConfig.gatewayUrl },
+            {
+              name: 'RPC_INGESTION_DISABLED',
+              value: networkConfig.rpcIngestionDisabled.toString(),
+            },
+            { name: 'CREATED_TIMESTAMP', value: timestamp.toString() },
+          ],
+        },
+      ],
+      restartPolicy: 'Always',
+    },
+  };
+
+  try {
+    const { body: existingPod } = await k8sApi.readNamespacedPod(
+      podName,
+      'dapp-analytics',
+    );
+
+    if (
+      existingPod &&
+      existingPod.status &&
+      existingPod.status.phase !== 'Running'
+    ) {
+      await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
+      const { body: startedPod } = await k8sApi.createNamespacedPod(
+        'dapp-analytics',
+        podManifest,
+      );
+      logger.info(`Pod restarted: ${podName}`);
+      return res.status(httpStatus.CREATED).json({
+        message: `Pod restarted: ${podName}`,
+        podName: startedPod.metadata?.name,
+      });
+    } else {
+      logger.info(`Pod is already running: ${podName}`);
+      return res.status(httpStatus.OK).json({
+        message: `Pod is already running: ${podName}`,
+      });
+    }
+  } catch (error) {
+    if (error.response?.statusCode === 404) {
+      const { body: newPod } = await k8sApi.createNamespacedPod(
+        'dapp-analytics',
+        podManifest,
+      );
+      logger.info(`New pod created: ${podName}`);
+      return res.status(httpStatus.CREATED).json({
+        message: `New pod created: ${podName}`,
+        podName: newPod.metadata?.name,
+      });
+    } else {
+      logger.error('Error managing Kubernetes pod:', error);
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to manage Kubernetes pod',
+        error: error.message,
+      });
+    }
+  }
+};
+
+export const stopDappIndexerPod = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  const { id } = req.body;
+  const podName = `indexer-${id}`;
+
+  try {
+    await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics'); // Corrected namespace
+    logger.info(`Pod stopped (deleted): ${podName}`);
+    return res.status(200).json({
+      message: `Pod ${podName} has been successfully stopped (deleted)`,
+    });
+  } catch (error) {
+    if (error.response?.statusCode === 404) {
+      logger.error(`Pod ${podName} not found:`, error);
+      return res.status(404).json({
+        message: `Pod ${podName} not found`,
+      });
+    } else {
+      logger.error(`Error stopping pod ${podName}:`, error);
+      return res.status(500).json({
+        message: `Failed to stop pod ${podName}`,
         error: error.message,
       });
     }
