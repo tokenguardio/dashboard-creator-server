@@ -1,12 +1,12 @@
 const DAPP_ANALYTICS_NETWORKS = {
-  'Aleph Zero': {
+  'aleph-zero': {
     type: 'substrate',
     rpcEndpoint: 'https://aleph-zero.api.onfinality.io/public',
     ss58Network: 'substrate',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/aleph-zero',
     rpcIngestionDisabled: 'true',
   },
-  'Astar': {
+  astar: {
     type: 'substrate',
     rpcEndpoint: 'https://astar.api.onfinality.io/public',
     ss58Network: 'astar',
