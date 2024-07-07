@@ -28,7 +28,7 @@ const envsSchema = Joi.object()
     INDEXER_DB_NAME: Joi.string().required(),
     INDEXER_DB_USER: Joi.string().required(),
     INDEXER_DB_PASS: Joi.string().required(),
-    INDEXER_DB_PORT: Joi.string().required(),
+    INDEXER_DB_PORT: Joi.number().required(),
   })
   .unknown(true);
 
