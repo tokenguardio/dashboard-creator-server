@@ -24,6 +24,11 @@ const envsSchema = Joi.object()
     DEPLOYMENT_MODE: Joi.string().valid('docker', 'kubernetes').required(),
     CLIENT_URL: Joi.string().required(),
     DB_TLS_CA_CERT_FILE: Joi.string().optional(),
+    INDEXER_DB_HOST: Joi.string().required(),
+    INDEXER_DB_NAME: Joi.string().required(),
+    INDEXER_DB_USER: Joi.string().required(),
+    INDEXER_DB_PASS: Joi.string().required(),
+    INDEXER_DB_PORT: Joi.number().required(),
   })
   .unknown(true);
 
@@ -51,4 +56,9 @@ export default {
   tgServerUrl: envVars.TG_SERVER_URL,
   tgClientUrl: envVars.TG_CLIENT_URL,
   tlsCAFile: envVars.DB_TLS_CA_CERT_FILE,
+  indexerDbHost: envVars.INDEXER_DB_HOST,
+  indexerDbName: envVars.INDEXER_DB_NAME,
+  indexerDbUser: envVars.INDEXER_DB_USER,
+  indexerDbPass: envVars.INDEXER_DB_PASS,
+  indexerDbPort: envVars.INDEXER_DB_PORT,
 };

@@ -18,7 +18,7 @@ import {
 import { resolveType } from './substrate-types.mapping';
 import { docker, k8sApi } from 'server';
 import DAPP_ANALYTICS_NETWORKS from './../../config/dapp-analytics-networks';
-import { V1Pod } from '@kubernetes/client-node';
+import config from '@config/config';
 
 const { API_BASE_URL } = process.env;
 
@@ -113,11 +113,11 @@ export const startDappIndexerDocker = async (
           },
           Env: [
             `DAPP_ID=${id}`,
-            'DB_HOST=host.docker.internal',
-            'DB_NAME=dapp_analytics',
-            'DB_USER=squid',
-            'DB_PASS=postgres',
-            'DB_PORT=5432',
+            `DB_HOST=${config.indexerDbHost}`,
+            `DB_NAME=${config.indexerDbName}`,
+            `DB_USER=${config.indexerDbUser}`,
+            `DB_PASS=${config.indexerDbPass}`,
+            `DB_PORT=${config.indexerDbPort}`,
             `RPC_ENDPOINT=${networkConfig.rpcEndpoint}`,
             `SS58_NETWORK=${networkConfig.ss58Network}`,
             `GATEWAY_URL=${networkConfig.gatewayUrl}`,
@@ -231,11 +231,11 @@ export const startDappIndexerPod = async (
           image: image,
           env: [
             { name: 'DAPP_ID', value: id.toString() },
-            { name: 'DB_HOST', value: 'host.docker.internal' },
-            { name: 'DB_NAME', value: 'dapp_analytics' },
-            { name: 'DB_USER', value: 'squid' },
-            { name: 'DB_PASS', value: 'postgres' },
-            { name: 'DB_PORT', value: '5432' },
+            { name: 'DB_HOST', value: config.indexerDbHost },
+            { name: 'DB_NAME', value: config.indexerDbName },
+            { name: 'DB_USER', value: config.indexerDbUser },
+            { name: 'DB_PASS', value: config.indexerDbPass },
+            { name: 'DB_PORT', value: config.indexerDbPort },
             { name: 'RPC_ENDPOINT', value: networkConfig.rpcEndpoint },
             { name: 'SS58_NETWORK', value: networkConfig.ss58Network },
             { name: 'GATEWAY_URL', value: networkConfig.gatewayUrl },
