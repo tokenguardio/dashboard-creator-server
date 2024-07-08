@@ -47,12 +47,12 @@ const read = async (
     // Populate the elements field
     let dashboard: IDashboard;
     if (includeHiddenFilters) {
-      dashboard = await DashboardModel.findOne({ _id: id })
+      dashboard = await DashboardModel.findOne({ id: id })
         .populate('elements')
         .populate('filters')
         .populate('theme');
     } else {
-      dashboard = await DashboardModel.findOne({ _id: id })
+      dashboard = await DashboardModel.findOne({ id: id })
         .populate('elements')
         .populate({
           path: 'filters',
@@ -168,12 +168,12 @@ const update = async (
 };
 
 const deleteById = async (id: string): Promise<void> => {
-  const dashboard = await DashboardModel.findOne({ _id: id });
+  const dashboard = await DashboardModel.findOne({ id: id });
   if (!dashboard) {
     throw new Error(`Dashboard with id ${id} does not exist.`);
   }
 
-  await DashboardModel.findOneAndDelete({ _id: id });
+  await DashboardModel.findOneAndDelete({ id: id });
   logger.debug(`Dashboard with id ${id} has been removed`);
 };
 
@@ -183,7 +183,7 @@ const addElement = async (
 ): Promise<IDashboardElement> => {
   try {
     // Check if the dashboard exists
-    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -216,9 +216,9 @@ const getElement = async (
 ): Promise<IDashboardElement> => {
   try {
     logger.info(`dashboardId: ${dashboardId} elementId: ${elementId}`);
-    const dashboard = await DashboardModel.findById(dashboardId).populate(
-      'elements',
-    );
+    const dashboard = await DashboardModel.findOne({
+      id: dashboardId,
+    }).populate('elements');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -252,9 +252,9 @@ const deleteElement = async (
 ): Promise<boolean> => {
   try {
     // Check if the dashboard exists
-    const dashboard = await DashboardModel.findById(dashboardId).populate(
-      'elements',
-    );
+    const dashboard = await DashboardModel.findOne({
+      id: dashboardId,
+    }).populate('elements');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -272,8 +272,8 @@ const deleteElement = async (
 
     await dashboardElementService.deleteDashboardElement(elementId);
 
-    await DashboardModel.findByIdAndUpdate(
-      dashboardId,
+    await DashboardModel.findOneAndUpdate(
+      { id: dashboardId },
       { $pull: { elements: elementId } },
       { new: true },
     );
@@ -297,7 +297,7 @@ const updateElementInDashboard = async (
 ): Promise<boolean> => {
   try {
     const dashboard = await DashboardModel.findOne({
-      _id: dashboardId,
+      id: dashboardId,
     }).populate('elements');
 
     if (!dashboard) {
@@ -340,14 +340,14 @@ const addFilter = async (
   filterData: IDashboardFilter,
 ): Promise<IDashboardFilter> => {
   try {
-    const dashboard = await DashboardModel.findById(dashboardId);
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
 
     const newFilter = await dashboardFilterService.createFilter(filterData);
-    await DashboardModel.findByIdAndUpdate(
-      dashboardId,
+    await DashboardModel.findOneAndUpdate(
+      { id: dashboardId },
       { $push: { filters: newFilter._id } },
       { new: true },
     );
@@ -370,7 +370,7 @@ const getFilter = async (
 ): Promise<IDashboardFilter> => {
   try {
     const dashboard = await (
-      await DashboardModel.findById(dashboardId)
+      await DashboardModel.findOne({ id: dashboardId })
     ).populate('filters');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
@@ -396,9 +396,9 @@ const getFilterByName = async (
   filterName: string,
 ): Promise<IDashboardFilter> => {
   try {
-    const dashboard = await DashboardModel.findById(dashboardId).populate(
-      'filters',
-    );
+    const dashboard = await DashboardModel.findOne({
+      id: dashboardId,
+    }).populate('filters');
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -428,7 +428,7 @@ const deleteFilter = async (
   filterId: string,
 ): Promise<boolean> => {
   try {
-    const dashboard = await DashboardModel.findById(dashboardId);
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -443,8 +443,8 @@ const deleteFilter = async (
 
     await dashboardFilterService.deleteFilter(filterId);
 
-    await DashboardModel.findByIdAndUpdate(
-      dashboardId,
+    await DashboardModel.findOneAndUpdate(
+      { id: dashboardId },
       { $pull: { filters: filterId } },
       { new: true },
     );
@@ -465,7 +465,7 @@ const updateFilter = async (
   filterData: any,
 ) => {
   try {
-    const dashboard = await DashboardModel.findById(dashboardId);
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -495,7 +495,9 @@ const getElementByQueryId = async (dashboardId: string, queryId: number) => {
     logger.info(
       `Searching in dashboardId: ${dashboardId} for queryId: ${queryId}`,
     );
-    const dashboard = await DashboardModel.findById(dashboardId).populate({
+    const dashboard = await DashboardModel.findOne({
+      id: dashboardId,
+    }).populate({
       path: 'elements',
       match: { type: 'basicQuery', queryId }, // Ensure to match elements of type basicQuery and the specific queryId
     });
@@ -530,7 +532,7 @@ const addLayoutItem = async (
   layoutItem: ILayoutItem,
 ): Promise<void> => {
   try {
-    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -551,7 +553,7 @@ const addLayoutItem = async (
 
 const getLayoutItems = async (dashboardId: string): Promise<ILayoutItem[]> => {
   try {
-    const dashboard = await DashboardModel.findById(dashboardId);
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -577,7 +579,7 @@ const updateLayoutItem = async (
   layoutItemData: ILayoutItem,
 ): Promise<void> => {
   try {
-    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }
@@ -608,7 +610,7 @@ const deleteLayoutItem = async (
   layoutItemId: string,
 ): Promise<void> => {
   try {
-    const dashboard = await DashboardModel.findOne({ _id: dashboardId });
+    const dashboard = await DashboardModel.findOne({ id: dashboardId });
     if (!dashboard) {
       throw new AppError(httpStatus.NOT_FOUND, 'Dashboard not found');
     }

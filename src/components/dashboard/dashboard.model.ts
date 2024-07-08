@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import {v4 as uuidv4} from 'uuid';
+
 import {
   IDashboard,
   ILayoutItem,
@@ -30,6 +32,7 @@ const themeSchema = new mongoose.Schema<ITheme>({
 });
 
 const dashboardSchema = new mongoose.Schema<IDashboard & Document>({
+  id: { type: String, default: uuidv4, required: true, unique: true },
   title: { type: String, required: true },
   dappId: { type: String, required: false },
   elements: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DashboardElement' }],
