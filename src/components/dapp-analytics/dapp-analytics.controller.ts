@@ -299,7 +299,7 @@ export const startDappIndexerPod = async (
         });
       } else {
         logger.error('Error reading pod:', error);
-        logger.error(`details: ${error.response?.body}`);
+        console.error('Error details:', error.response.body);
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
           message: 'Failed to read Kubernetes pod',
           error: error.message,
@@ -308,7 +308,7 @@ export const startDappIndexerPod = async (
     }
   } catch (error) {
     logger.error('Error managing Kubernetes pod:', error);
-    logger.error(`details: ${error.response?.body}`)
+    console.error('Error details:', error.response.body);
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: 'Failed to manage Kubernetes pod',
       error: error.message,
