@@ -267,7 +267,9 @@ export const startDappIndexerPod = async (
         existingPod.status &&
         existingPod.status.phase !== 'Running'
       ) {
-        logger.info(`pod found but in ${existingPod.status.phase} state. delete and create new pod`);
+        logger.info(
+          `pod found but in ${existingPod.status.phase} state. delete and create new pod`,
+        );
         await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
         logger.info(`Pod deleted: ${podName}`);
         const { body: startedPod } = await k8sApi.createNamespacedPod(
@@ -492,6 +494,9 @@ export const getAllDapps = async (
       });
     }
     const dApps = response.data;
+    if (req.query.simplified) {
+      return res.status(200).json(dApps);
+    }
 
     const filters = { label: ['managed-by=dapp-analytics'] };
     const containers = await docker.listContainers({

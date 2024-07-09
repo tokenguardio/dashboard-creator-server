@@ -55,7 +55,7 @@ const createDashboard = async (req: Request, res: Response) => {
 
 const getAllDashboards = async (req: Request, res: Response) => {
   try {
-    const dashboards = await getAll();
+    const dashboards = await getAll(req.query);
     res
       .status(httpStatus.OK)
       .send({ message: 'Dashboards Read', output: dashboards });

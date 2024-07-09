@@ -71,9 +71,9 @@ const read = async (
   }
 };
 
-const getAll = async (): Promise<IDashboard[]> => {
+const getAll = async (query: object): Promise<IDashboard[]> => {
   logger.debug(`Fetching all dashboards`);
-  const dashboards = await DashboardModel.find({})
+  const dashboards = await DashboardModel.find(query)
     .populate('elements')
     .populate({
       path: 'filters',
