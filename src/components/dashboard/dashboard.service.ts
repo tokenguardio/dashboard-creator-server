@@ -94,8 +94,8 @@ const update = async (
   }
 
   if (!dashboardData.elements?.length && !existingDashboard.elements.length) {
-    const updatedDashboard = await DashboardModel.findByIdAndUpdate(
-      dashboardId,
+    const updatedDashboard = await DashboardModel.findOneAndUpdate(
+      { id: dashboardId },
       dashboardData,
       { new: true },
     );
@@ -150,8 +150,8 @@ const update = async (
   logger.info(`removedElementsIds ${removedElementsIds}`);
   logger.info(`updatedElementsIds ${updatedElementsIds}`);
   // Update the dashboard
-  const updatedDashboard = await DashboardModel.findByIdAndUpdate(
-    dashboardId,
+  const updatedDashboard = await DashboardModel.findOneAndUpdate(
+    { id: dashboardId },
     {
       ...dashboardData,
       elements: updatedElementsIds,
