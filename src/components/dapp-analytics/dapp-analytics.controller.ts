@@ -236,7 +236,7 @@ export const startDappIndexerPod = async (
             { name: 'DB_NAME', value: config.indexerDbName },
             { name: 'DB_USER', value: config.indexerDbUser },
             { name: 'DB_PASS', value: config.indexerDbPass },
-            { name: 'DB_PORT', value: config.indexerDbPort },
+            { name: 'DB_PORT', value: config.indexerDbPort.toString() },
             { name: 'RPC_ENDPOINT', value: networkConfig.rpcEndpoint },
             { name: 'SS58_NETWORK', value: networkConfig.ss58Network },
             { name: 'GATEWAY_URL', value: networkConfig.gatewayUrl },
