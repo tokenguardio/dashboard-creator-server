@@ -267,7 +267,9 @@ export const startDappIndexerPod = async (
         existingPod.status &&
         existingPod.status.phase !== 'Running'
       ) {
+        logger.info(`pod found but in ${existingPod.status.phase} state. delete and create new pod`);
         await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
+        logger.info(`Pod deleted: ${podName}`);
         const { body: startedPod } = await k8sApi.createNamespacedPod(
           'dapp-analytics',
           podManifest,
@@ -285,6 +287,7 @@ export const startDappIndexerPod = async (
       }
     } catch (error) {
       if (error.response?.statusCode === 404) {
+        logger.info('creating new pod');
         const { body: newPod } = await k8sApi.createNamespacedPod(
           'dapp-analytics',
           podManifest,
@@ -296,6 +299,7 @@ export const startDappIndexerPod = async (
         });
       } else {
         logger.error('Error reading pod:', error);
+        logger.error(`details: ${error.response?.body}`);
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
           message: 'Failed to read Kubernetes pod',
           error: error.message,
@@ -304,6 +308,7 @@ export const startDappIndexerPod = async (
     }
   } catch (error) {
     logger.error('Error managing Kubernetes pod:', error);
+    logger.error(`details: ${error.response?.body}`)
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: 'Failed to manage Kubernetes pod',
       error: error.message,
