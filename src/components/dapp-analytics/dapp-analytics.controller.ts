@@ -462,13 +462,9 @@ export async function fetchDappIndexingStatus(id: string) {
   }
 }
 
-export const getAllDapps = async (
-  req: Request,
-  res: Response,
-): Promise<Response> => {
+export const getAllDapps = async (req, res) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/dapp-analytics/dapp/all`);
-
     if (response.status !== 200) {
       return res.status(response.status).json({
         message: response.data.message || 'No DApps found',
@@ -476,33 +472,33 @@ export const getAllDapps = async (
     }
     const dApps = response.data;
 
-    const filters = { label: ['managed-by=dapp-analytics'] };
-    const containers = await docker.listContainers({
-      all: true,
-      filters: JSON.stringify(filters),
-    });
-
-    const dAppsWithStatus = await Promise.all(
+    const dAppsWithIndexingStatus = await Promise.all(
       dApps.map(async (dApp) => {
         let indexingStatus = 0;
         try {
-          const response = await axios.get(
+          const statusResponse = await axios.get(
             `${API_BASE_URL}/dapp-analytics/dapp/${dApp.id}/status`,
           );
           indexingStatus =
-            response.status === 200 ? response.data.output.status.height : 0;
+            statusResponse.status === 200
+              ? statusResponse.data.output.status.height
+              : 0;
         } catch (error) {}
-        const relatedContainer = containers.find(
-          (container) =>
-            container.Labels && container.Labels['dapp-id'] === dApp.id,
-        );
         return {
           ...dApp,
-          status: relatedContainer ? relatedContainer.State : 'not found',
           indexingStatus,
         };
       }),
     );
+
+    let dAppsWithStatus;
+    if (config.deploymentMode === 'kubernetes') {
+      dAppsWithStatus = await checkKubernetesPodStatus(dAppsWithIndexingStatus);
+    } else {
+      dAppsWithStatus = await checkDockerContainerStatus(
+        dAppsWithIndexingStatus,
+      );
+    }
 
     return res.status(200).json(dAppsWithStatus);
   } catch (error) {
@@ -517,6 +513,49 @@ export const getAllDapps = async (
     });
   }
 };
+
+async function checkDockerContainerStatus(dApps) {
+  const filters = { label: ['managed-by=dapp-analytics'] };
+  const containers = await docker.listContainers({
+    all: true,
+    filters: JSON.stringify(filters),
+  });
+
+  return dApps.map((dApp) => {
+    const relatedContainer = containers.find(
+      (container) =>
+        container.Labels && container.Labels['dapp-id'] === dApp.id,
+    );
+    return {
+      ...dApp,
+      containerStatus: relatedContainer ? relatedContainer.State : 'not found',
+    };
+  });
+}
+
+async function checkKubernetesPodStatus(dApps) {
+  const namespace = 'dapp-analytics';
+  const labelSelector = 'managed-by=dapp-analytics';
+  const pods = await k8sApi.listNamespacedPod(
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  );
+
+  return dApps.map((dApp) => {
+    const relatedPod = pods.body.items.find(
+      (pod) =>
+        pod.metadata.labels && pod.metadata.labels['dapp-id'] === dApp.id,
+    );
+    return {
+      ...dApp,
+      podStatus: relatedPod ? relatedPod.status.phase : 'not found',
+    };
+  });
+}
 
 export const getDappUnits = async (
   req: Request,
