@@ -108,7 +108,7 @@ export const startDappIndexerDocker = async (
           Image: image,
           name: containerName,
           Labels: {
-            'managed-by': 'dapp-analytics',
+            'managed-by': 'dapp-analytics-admin',
             'dapp-id': id,
           },
           Env: [
@@ -389,54 +389,75 @@ export const getDapp = async (
 ): Promise<Response> => {
   const { id } = req.params;
   const { data: dappData, error: dappError } = await fetchDappById(id);
+
+  if (dappError) {
+    return res.status(dappError.status).json({ message: dappError.message });
+  }
+
   let indexingStatus = 0;
   try {
     const response = await axios.get(
       `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
     );
-    indexingStatus =
-      response.status === 200 ? response.data.output.status.height : 0;
+    if (response.status === 200) {
+      indexingStatus = response.data.output.status.height;
+    }
   } catch (error) {
     logger.error(`Error retrieving DApp status with id ${id}:`, error);
   }
 
-  if (dappError) {
-    return res.status(dappError.status).json({ message: dappError.message });
+  let containerStatus;
+  if (config.deploymentMode === 'kubernetes') {
+    containerStatus = await fetchKubernetesPodStatus(id);
   } else {
-    try {
-      const filters = { label: [`managed-by=dapp-analytics`, `dapp-id=${id}`] };
-      const containers = await docker.listContainers({
-        all: true,
-        filters: JSON.stringify(filters),
-      });
+    containerStatus = await fetchDockerContainerStatus(id);
+  }
 
-      const relatedContainer = containers.find(
-        (container) => container.Labels['dapp-id'] === id,
-      );
-      const responseData = {
-        ...dappData,
-        containerStatus: relatedContainer
-          ? relatedContainer.State
-          : 'not found',
-        indexingStatus,
-      };
+  const responseData = {
+    ...dappData,
+    containerStatus: containerStatus || 'not found',
+    indexingStatus,
+  };
 
-      if (responseData.containerStatus === 'not found') {
-        return res.status(204).json({
-          message: 'DApp found but no associated container.',
-        });
-      } else {
-        return res.status(200).json(responseData);
-      }
-    } catch (error) {
-      console.error('Error retrieving container status:', error);
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to retrieve container status',
-        error: error.message,
-      });
-    }
+  if (!containerStatus || containerStatus === 'not found') {
+    return res.status(204).json({
+      message: 'DApp found but no associated container.',
+    });
+  } else {
+    return res.status(200).json(responseData);
   }
 };
+
+async function fetchDockerContainerStatus(id: string): Promise<string | null> {
+  const filters = {
+    label: [`managed-by=dapp-analytics-admin`, `dapp-id=${id}`],
+  };
+  const containers = await docker.listContainers({
+    all: true,
+    filters: JSON.stringify(filters),
+  });
+  const relatedContainer = containers.find(
+    (container) => container.Labels && container.Labels['dapp-id'] === id,
+  );
+  return relatedContainer ? relatedContainer.State : null;
+}
+
+async function fetchKubernetesPodStatus(id: string): Promise<string | null> {
+  const namespace = 'dapp-analytics';
+  const labelSelector = `managed-by=dapp-analytics-admin,dapp-id=${id}`;
+  const pods = await k8sApi.listNamespacedPod(
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  );
+  const relatedPod = pods.body.items.find(
+    (pod) => pod.metadata.labels && pod.metadata.labels['dapp-id'] === id,
+  );
+  return relatedPod ? relatedPod.status.phase : null;
+}
 
 export async function fetchDappById(id) {
   try {
@@ -537,7 +558,7 @@ export const getAllDapps = async (req, res) => {
 };
 
 async function checkDockerContainerStatus(dApps) {
-  const filters = { label: ['managed-by=dapp-analytics'] };
+  const filters = { label: ['managed-by=dapp-analytics-admin'] };
   const containers = await docker.listContainers({
     all: true,
     filters: JSON.stringify(filters),
@@ -557,7 +578,7 @@ async function checkDockerContainerStatus(dApps) {
 
 async function checkKubernetesPodStatus(dApps) {
   const namespace = 'dapp-analytics';
-  const labelSelector = 'managed-by=dapp-analytics';
+  const labelSelector = 'managed-by=dapp-analytics-admin';
   const pods = await k8sApi.listNamespacedPod(
     namespace,
     undefined,
