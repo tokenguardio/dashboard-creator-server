@@ -108,7 +108,7 @@ export const startDappIndexerDocker = async (
           Image: image,
           name: containerName,
           Labels: {
-            'managed-by': 'dapp-analytics',
+            'managed-by': 'dapp-analytics-admin',
             'dapp-id': id,
           },
           Env: [
@@ -220,7 +220,7 @@ export const startDappIndexerPod = async (
     metadata: {
       name: podName,
       labels: {
-        'managed-by': 'dapp-analytics',
+        'managed-by': 'dapp-analytics-admin',
         'dapp-id': id.toString(),
       },
     },
@@ -410,7 +410,9 @@ export const getDapp = async (
 };
 
 async function fetchDockerContainerStatus(id: string): Promise<string | null> {
-  const filters = { label: [`managed-by=dapp-analytics`, `dapp-id=${id}`] };
+  const filters = {
+    label: [`managed-by=dapp-analytics-admin`, `dapp-id=${id}`],
+  };
   const containers = await docker.listContainers({
     all: true,
     filters: JSON.stringify(filters),
@@ -423,7 +425,7 @@ async function fetchDockerContainerStatus(id: string): Promise<string | null> {
 
 async function fetchKubernetesPodStatus(id: string): Promise<string | null> {
   const namespace = 'dapp-analytics';
-  const labelSelector = `managed-by=dapp-analytics,dapp-id=${id}`;
+  const labelSelector = `managed-by=dapp-analytics-admin,dapp-id=${id}`;
   const pods = await k8sApi.listNamespacedPod(
     namespace,
     undefined,
@@ -534,7 +536,7 @@ export const getAllDapps = async (req, res) => {
 };
 
 async function checkDockerContainerStatus(dApps) {
-  const filters = { label: ['managed-by=dapp-analytics'] };
+  const filters = { label: ['managed-by=dapp-analytics-admin'] };
   const containers = await docker.listContainers({
     all: true,
     filters: JSON.stringify(filters),
@@ -554,7 +556,7 @@ async function checkDockerContainerStatus(dApps) {
 
 async function checkKubernetesPodStatus(dApps) {
   const namespace = 'dapp-analytics';
-  const labelSelector = 'managed-by=dapp-analytics';
+  const labelSelector = 'managed-by=dapp-analytics-admin';
   const pods = await k8sApi.listNamespacedPod(
     namespace,
     undefined,
