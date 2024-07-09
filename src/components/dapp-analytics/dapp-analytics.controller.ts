@@ -220,11 +220,12 @@ export const startDappIndexerPod = async (
     metadata: {
       name: podName,
       labels: {
-        'managed-by': 'dapp-analytics',
+        'managed-by': 'dapp-analytics-admin',
         'dapp-id': id.toString(),
       },
     },
     spec: {
+      serviceAccountName: 'dapp-analytics-admin',
       containers: [
         {
           name: podName,
@@ -252,50 +253,61 @@ export const startDappIndexerPod = async (
   };
 
   try {
-    const { body: existingPod } = await k8sApi.readNamespacedPod(
-      podName,
-      'dapp-analytics',
-    );
+    console.log('Pod Manifest:', JSON.stringify(podManifest, null, 2));
 
-    if (
-      existingPod &&
-      existingPod.status &&
-      existingPod.status.phase !== 'Running'
-    ) {
-      await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
-      const { body: startedPod } = await k8sApi.createNamespacedPod(
+    // Check if the pod already exists
+    try {
+      const { body: existingPod } = await k8sApi.readNamespacedPod(
+        podName,
         'dapp-analytics',
-        podManifest,
       );
-      logger.info(`Pod restarted: ${podName}`);
-      return res.status(httpStatus.CREATED).json({
-        message: `Pod restarted: ${podName}`,
-        podName: startedPod.metadata?.name,
-      });
-    } else {
-      logger.info(`Pod is already running: ${podName}`);
-      return res.status(httpStatus.OK).json({
-        message: `Pod is already running: ${podName}`,
-      });
+
+      if (
+        existingPod &&
+        existingPod.status &&
+        existingPod.status.phase !== 'Running'
+      ) {
+        await k8sApi.deleteNamespacedPod(podName, 'dapp-analytics');
+        const { body: startedPod } = await k8sApi.createNamespacedPod(
+          'dapp-analytics',
+          podManifest,
+        );
+        logger.info(`Pod restarted: ${podName}`);
+        return res.status(httpStatus.CREATED).json({
+          message: `Pod restarted: ${podName}`,
+          podName: startedPod.metadata?.name,
+        });
+      } else {
+        logger.info(`Pod is already running: ${podName}`);
+        return res.status(httpStatus.OK).json({
+          message: `Pod is already running: ${podName}`,
+        });
+      }
+    } catch (error) {
+      if (error.response?.statusCode === 404) {
+        const { body: newPod } = await k8sApi.createNamespacedPod(
+          'dapp-analytics',
+          podManifest,
+        );
+        logger.info(`New pod created: ${podName}`);
+        return res.status(httpStatus.CREATED).json({
+          message: `New pod created: ${podName}`,
+          podName: newPod.metadata?.name,
+        });
+      } else {
+        logger.error('Error reading pod:', error);
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+          message: 'Failed to read Kubernetes pod',
+          error: error.message,
+        });
+      }
     }
   } catch (error) {
-    if (error.response?.statusCode === 404) {
-      const { body: newPod } = await k8sApi.createNamespacedPod(
-        'dapp-analytics',
-        podManifest,
-      );
-      logger.info(`New pod created: ${podName}`);
-      return res.status(httpStatus.CREATED).json({
-        message: `New pod created: ${podName}`,
-        podName: newPod.metadata?.name,
-      });
-    } else {
-      logger.error('Error managing Kubernetes pod:', error);
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to manage Kubernetes pod',
-        error: error.message,
-      });
-    }
+    logger.error('Error managing Kubernetes pod:', error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to manage Kubernetes pod',
+      error: error.message,
+    });
   }
 };
 
