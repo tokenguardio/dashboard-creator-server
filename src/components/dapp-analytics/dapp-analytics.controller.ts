@@ -393,7 +393,6 @@ export const getDapp = async (
   if (dappError) {
     return res.status(dappError.status).json({ message: dappError.message });
   }
-
   let indexingStatus = 0;
   try {
     const response = await axios.get(
@@ -419,13 +418,7 @@ export const getDapp = async (
     indexingStatus,
   };
 
-  if (!containerStatus || containerStatus === 'not found') {
-    return res.status(204).json({
-      message: 'DApp found but no associated container.',
-    });
-  } else {
-    return res.status(200).json(responseData);
-  }
+  return res.status(200).json(responseData);
 };
 
 async function fetchDockerContainerStatus(id: string): Promise<string | null> {
