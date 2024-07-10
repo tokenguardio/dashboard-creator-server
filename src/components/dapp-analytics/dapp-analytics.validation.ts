@@ -57,17 +57,13 @@ export const saveDappValidation = {
 
 export const getDappByIdValidation = {
   params: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
   }),
 };
 
 export const getIndexerStatusValidation = {
   params: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
   }),
 };
 
@@ -86,42 +82,32 @@ export const updateDappValidation = {
 
 export const runIndexerValidation = {
   body: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
     fromBlock: Joi.number().integer().allow(null),
   }),
 };
 
 export const stopIndexerValidation = {
   body: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
   }),
 };
 
 export const getDappAbiEventsValidation = {
   params: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
   }),
 };
 
 export const getDappAbiCallsValidation = {
   params: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
   }),
 };
 
 export const dappDataMetricsValidation = {
   params: Joi.object({
-    id: Joi.string()
-      .guid({ version: ['uuidv4'] })
-      .required(),
+    id: Joi.string().uuid().required(),
     metric: Joi.string().valid('wallets', 'transferredTokens', 'interactions'),
   }),
   body: Joi.object({
