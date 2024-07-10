@@ -510,7 +510,8 @@ export const getAllDapps = async (req, res) => {
 
     const dAppsWithIndexingStatus = await Promise.all(
       dApps.map(async (dApp) => {
-        let indexingStatus = 0;
+        let indexingStatus = 0,
+          containerStatus = 'not found';
         try {
           const statusResponse = await axios.get(
             `${API_BASE_URL}/dapp-analytics/dapp/${dApp.id}/status`,
@@ -519,21 +520,33 @@ export const getAllDapps = async (req, res) => {
             statusResponse.status === 200
               ? statusResponse.data.output.status.height
               : 0;
-        } catch (error) {}
+        } catch (error) {
+          logger.error(
+            `Error retrieving DApp status with id ${dApp.id}:`,
+            error,
+          );
+        }
         return {
           ...dApp,
           indexingStatus,
+          containerStatus,
         };
       }),
     );
 
-    let dAppsWithStatus;
-    if (config.deploymentMode === 'kubernetes') {
-      dAppsWithStatus = await checkKubernetesPodStatus(dAppsWithIndexingStatus);
-    } else {
-      dAppsWithStatus = await checkDockerContainerStatus(
-        dAppsWithIndexingStatus,
-      );
+    let dAppsWithStatus = dAppsWithIndexingStatus;
+    try {
+      if (config.deploymentMode === 'kubernetes') {
+        dAppsWithStatus = await checkKubernetesPodStatus(
+          dAppsWithIndexingStatus,
+        );
+      } else {
+        dAppsWithStatus = await checkDockerContainerStatus(
+          dAppsWithIndexingStatus,
+        );
+      }
+    } catch (error) {
+      logger.error(`in config: ${config.deploymentMode} error checking container status:`, error);
     }
 
     return res.status(200).json(dAppsWithStatus);
@@ -588,7 +601,7 @@ async function checkKubernetesPodStatus(dApps) {
     );
     return {
       ...dApp,
-      podStatus: relatedPod ? relatedPod.status.phase : 'not found',
+      containerStatus: relatedPod ? relatedPod.status.phase : 'not found',
     };
   });
 }
