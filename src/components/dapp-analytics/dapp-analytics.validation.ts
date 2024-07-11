@@ -119,7 +119,9 @@ export const dappDataMetricsValidation = {
         args: Joi.object().pattern(
           Joi.string(),
           Joi.object({
-            type: Joi.string().valid('integer', 'string', 'boolean').required(),
+            type: Joi.string()
+              .valid('integer', 'number', 'string', 'boolean')
+              .required(),
             conditions: Joi.array().items(
               Joi.object({
                 operator: Joi.string()
