@@ -2,9 +2,9 @@ name: Build and push to ECR(tokenguard-prod)
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'dapp-analytics-main']
   pull_request:
-    branches: ['main']
+    branches: ['main', 'dapp-analytics-main']
   workflow_dispatch:
 
 env:
