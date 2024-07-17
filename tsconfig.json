@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "charset": "utf-8",
     "types": ["@types/jest", "node"],
     "typeRoots": ["node_modules/@types", "typings"],
     "lib": ["es2015", "es2016", "es2017", "es2018", "dom"],
@@ -28,7 +27,7 @@
       "@core/*": ["core/*"],
       "@components/*": ["components/*"],
       "@config/*": ["config/*"],
-      "@preload-data/*": ["preload-data/*"]
+      "@preload-data/*": ["preload-data/*"],
     },
     "plugins": [{ "transform": "ts-optchain/transform" }]
   },

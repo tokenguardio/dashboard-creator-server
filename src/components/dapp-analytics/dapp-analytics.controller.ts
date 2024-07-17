@@ -17,6 +17,8 @@ import {
 } from './abi.interface';
 import { resolveType } from './substrate-types.mapping';
 import { docker, k8sApi } from 'server';
+import { getCurrentBlock } from '@components/node-api/chainstate';
+import { convertAndFormatNumbers } from './helpers/formatting';
 import DAPP_ANALYTICS_NETWORKS from './../../config/dapp-analytics-networks';
 import config from '@config/config';
 
@@ -393,13 +395,18 @@ export const getDapp = async (
   if (dappError) {
     return res.status(dappError.status).json({ message: dappError.message });
   }
-  let indexingStatus = 0;
+  let indexingProgress = 0;
+  let indexingMaxBlock = 0;
   try {
     const response = await axios.get(
       `${API_BASE_URL}/dapp-analytics/dapp/${id}/status`,
     );
     if (response.status === 200) {
-      indexingStatus = response.data.output.status.height;
+      indexingProgress = response.data.output.status.height;
+    }
+    const nodeResponse = await getCurrentBlock(dappData.blockchain);
+    if (nodeResponse) {
+      indexingMaxBlock = nodeResponse;
     }
   } catch (error) {
     logger.error(`Error retrieving DApp status with id ${id}:`, error);
@@ -415,7 +422,7 @@ export const getDapp = async (
   const responseData = {
     ...dappData,
     containerStatus: containerStatus || 'not found',
-    indexingStatus,
+    indexingStatus: convertAndFormatNumbers(indexingProgress, indexingMaxBlock),
   };
 
   return res.status(200).json(responseData);
@@ -510,16 +517,21 @@ export const getAllDapps = async (req, res) => {
 
     const dAppsWithIndexingStatus = await Promise.all(
       dApps.map(async (dApp) => {
-        let indexingStatus = 0,
-          containerStatus = 'not found';
+        let indexingProgress = 0;
+        let indexingMaxBlock = 0;
+        let containerStatus = 'not found';
         try {
           const statusResponse = await axios.get(
             `${API_BASE_URL}/dapp-analytics/dapp/${dApp.id}/status`,
           );
-          indexingStatus =
+          indexingProgress =
             statusResponse.status === 200
               ? statusResponse.data.output.status.height
               : 0;
+          const nodeResponse = await getCurrentBlock(dApp.blockchain);
+          if (nodeResponse) {
+            indexingMaxBlock = nodeResponse;
+          }
         } catch (error) {
           logger.error(
             `Error retrieving DApp status with id ${dApp.id}:`,
@@ -528,7 +540,10 @@ export const getAllDapps = async (req, res) => {
         }
         return {
           ...dApp,
-          indexingStatus,
+          indexingStatus: convertAndFormatNumbers(
+            indexingProgress,
+            indexingMaxBlock,
+          ),
           containerStatus,
         };
       }),
@@ -546,7 +561,10 @@ export const getAllDapps = async (req, res) => {
         );
       }
     } catch (error) {
-      logger.error(`in config: ${config.deploymentMode} error checking container status:`, error);
+      logger.error(
+        `in config: ${config.deploymentMode} error checking container status:`,
+        error,
+      );
     }
 
     return res.status(200).json(dAppsWithStatus);
