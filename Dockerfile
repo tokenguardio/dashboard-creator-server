@@ -8,7 +8,7 @@ USER node
 
 COPY --chown=node:node package.json ./
 
-RUN npm install
+RUN npm install --prefer-dedupe
 COPY --chown=node:node . .
 RUN npm run build
 EXPOSE 8080
