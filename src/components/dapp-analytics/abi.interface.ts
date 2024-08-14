@@ -1,4 +1,4 @@
-interface IAbiTypeDef {
+interface IInkAbiTypeDef {
   id: number;
   type: {
     def: {
@@ -37,45 +37,45 @@ interface IAbiTypeDef {
   };
 }
 
-interface IAbiType {
+interface IInkAbiType {
   type: number;
   displayName: string[];
 }
 
-interface IAbiArg {
+interface IInkAbiArg {
   docs: string[];
-  type: IAbiType;
+  type: IInkAbiType;
   label: string;
   indexed?: boolean;
 }
 
-interface IAbiEvent {
-  args: IAbiArg[];
+interface IInkAbiEvent {
+  args: IInkAbiArg[];
   docs: string[];
   label: string;
 }
 
-interface IAbiMessage {
-  args: IAbiArg[];
+interface IInkAbiMessage {
+  args: IInkAbiArg[];
   docs: string[];
   label: string;
   default: boolean;
   mutates: boolean;
   payable: boolean;
   selector: string;
-  returnType: IAbiType;
+  returnType: IInkAbiType;
 }
 
-interface IAbiSpec {
+interface IInkAbiSpec {
   docs: string[];
-  events: IAbiEvent[];
-  messages: IAbiMessage[];
-  types: IAbiTypeDef[];
+  events: IInkAbiEvent[];
+  messages: IInkAbiMessage[];
+  types: IInkAbiTypeDef[];
 }
 
-interface IAbi {
-  spec: IAbiSpec;
-  types: IAbiTypeDef[];
+interface IInkAbi {
+  spec: IInkAbiSpec;
+  types: IInkAbiTypeDef[];
 }
 
 interface IAbiEventsOutput {
@@ -119,14 +119,60 @@ interface IAbiCallsOutputContractCallArg {
   type: string;
 }
 
+interface IEvmAbi extends Array<IEvmAbiItem> {}
+
+interface IEvmAbiItem {
+  type: 'function' | 'constructor' | 'event' | 'fallback' | 'receive';
+  name?: string; // Only functions and events have names
+  inputs?: IEvmAbiInputOutput[];
+  outputs?: IEvmAbiInputOutput[];
+  stateMutability?: 'pure' | 'view' | 'nonpayable' | 'payable';
+  anonymous?: boolean; // Only events can be anonymous
+  payable?: boolean; // Deprecated in favor of stateMutability
+  constant?: boolean; // Deprecated in favor of stateMutability
+}
+
+interface IEvmAbiInputOutput {
+  name: string;
+  type: string; // Solidity types like 'uint256', 'address', 'bytes32', etc.
+  internalType?: string; // Optionally provides the internal Solidity type
+  indexed?: boolean; // Only events' inputs can be indexed
+}
+
+interface IEvmEventAbiItem extends IEvmAbiItem {
+  type: 'event';
+  anonymous?: boolean;
+  inputs: IEvmAbiInputOutput[];
+}
+
+interface IEvmFunctionAbiItem extends IEvmAbiItem {
+  type: 'function';
+  constant?: boolean;
+  payable?: boolean;
+  stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
+  inputs: IEvmAbiInputOutput[];
+  outputs: IEvmAbiInputOutput[];
+}
+
+interface IEvmConstructorAbiItem extends IEvmAbiItem {
+  type: 'constructor';
+  stateMutability: 'nonpayable' | 'payable';
+  inputs: IEvmAbiInputOutput[];
+}
+
+interface IEvmFallbackAbiItem extends IEvmAbiItem {
+  type: 'fallback' | 'receive';
+  stateMutability: 'nonpayable' | 'payable';
+}
+
 export {
-  IAbi,
-  IAbiArg,
-  IAbiEvent,
-  IAbiMessage,
-  IAbiSpec,
-  IAbiType,
-  IAbiTypeDef,
+  IInkAbi,
+  IInkAbiArg,
+  IInkAbiEvent,
+  IInkAbiMessage,
+  IInkAbiSpec,
+  IInkAbiType,
+  IInkAbiTypeDef,
   IAbiEventsOutput,
   IAbiEventsOutputContract,
   IAbiEventsOutputContractEvent,
@@ -135,4 +181,11 @@ export {
   IAbiCallsOutputContract,
   IAbiCallsOutputContractCall,
   IAbiCallsOutputContractCallArg,
+  IEvmAbi,
+  IEvmAbiItem,
+  IEvmAbiInputOutput,
+  IEvmConstructorAbiItem,
+  IEvmEventAbiItem,
+  IEvmFallbackAbiItem,
+  IEvmFunctionAbiItem,
 };
