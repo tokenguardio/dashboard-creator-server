@@ -4,21 +4,25 @@ import axios from 'axios';
 import logger from '@core/utils/logger';
 import { IDAppData } from './dapp-analytics.interface';
 import {
-  IAbi,
-  IAbiEvent,
-  IAbiMessage,
-  IAbiArg,
+  IInkAbi,
+  IInkAbiEvent,
+  IInkAbiMessage,
+  IInkAbiArg,
   IAbiEventsOutput,
   IAbiEventsOutputContract,
   IAbiEventsOutputContractEvent,
   IAbiCallsOutput,
   IAbiCallsOutputContract,
   IAbiCallsOutputContractCall,
+  IEvmAbi,
+  IEvmEventAbiItem,
+  IEvmFunctionAbiItem,
 } from './abi.interface';
 import { resolveType } from './substrate-types.mapping';
 import { docker, k8sApi } from 'server';
 import { getCurrentBlock } from '@components/node-api/chainstate';
 import { convertAndFormatNumbers } from './helpers/formatting';
+import { isSubstrateAbi, isEvmAbi } from './helpers/utils';
 import DAPP_ANALYTICS_NETWORKS from './../../config/dapp-analytics-networks';
 import config from '@config/config';
 
@@ -125,6 +129,9 @@ export const startDappIndexerDocker = async (
             `GATEWAY_URL=${networkConfig.gatewayUrl}`,
             `RPC_INGESTION_DISABLED=${networkConfig.rpcIngestionDisabled}`,
             `CREATED_TIMESTAMP=${timestamp}`,
+            `DAPP_ADDRESSES=${dappData.abis
+              .map((abi) => abi.address)
+              .join(',')}`,
           ],
         };
         container = await docker.createContainer(containerOptions);
@@ -247,6 +254,10 @@ export const startDappIndexerPod = async (
               value: networkConfig.rpcIngestionDisabled.toString(),
             },
             { name: 'CREATED_TIMESTAMP', value: timestamp.toString() },
+            {
+              name: 'DAPP_ADDRESSES',
+              value: dappData.abis.map((abi) => abi.address).join(','),
+            },
           ],
         },
       ],
@@ -640,14 +651,14 @@ export const getDappUnits = async (
   });
 };
 
-const extractAbiEvents = function (
-  contractAbi: IAbi,
+const extractInkAbiEvents = function (
+  contractAbi: IInkAbi,
 ): IAbiEventsOutputContractEvent[] {
   // Extract events
   const events: IAbiEventsOutputContractEvent[] = contractAbi.spec.events.map(
-    (event: IAbiEvent) => ({
+    (event: IInkAbiEvent) => ({
       name: event.label,
-      args: event.args.map((arg: IAbiArg) => ({
+      args: event.args.map((arg: IInkAbiArg) => ({
         name: arg.label,
         type: resolveType(arg.type.type, contractAbi.types),
       })),
@@ -656,20 +667,58 @@ const extractAbiEvents = function (
   return events;
 };
 
-const extractAbiFunctions = function (
-  contractAbi: IAbi,
+const extractEvmAbiEvents = function (
+  abi: IEvmAbi,
+): IAbiEventsOutputContractEvent[] {
+  const events: IAbiEventsOutputContractEvent[] = abi
+    .filter((item) => item.type === 'event')
+    .map((event: IEvmEventAbiItem) => ({
+      name: event.name!,
+      args: event.inputs!.map((input) => ({
+        name: input.name,
+        type: input.type,
+      })),
+    }));
+
+  return events;
+};
+
+const extractInkAbiFunctions = function (
+  contractAbi: IInkAbi,
 ): IAbiCallsOutputContractCall[] {
   // Extract messages (calls) that mutate the blockchain state
   const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages
-    .filter((message: IAbiMessage) => message.mutates)
-    .map((message: IAbiMessage) => ({
+    .filter((message: IInkAbiMessage) => message.mutates)
+    .map((message: IInkAbiMessage) => ({
       name: message.label,
       selector: message.selector,
-      args: message.args.map((arg: IAbiArg) => ({
+      args: message.args.map((arg: IInkAbiArg) => ({
         name: arg.label,
         type: resolveType(arg.type.type, contractAbi.types),
       })),
     }));
+  return calls;
+};
+
+const extractEvmAbiFunctions = function (
+  abi: IEvmAbi,
+): IAbiCallsOutputContractCall[] {
+  const calls: IAbiCallsOutputContractCall[] = abi
+    .filter(
+      (item) =>
+        item.type === 'function' &&
+        item.stateMutability !== 'view' &&
+        item.stateMutability !== 'pure',
+    )
+    .map((func: IEvmFunctionAbiItem) => ({
+      name: func.name!,
+      selector: '0x00000000', // jrojek TODO: calculate selector
+      args: func.inputs!.map((input) => ({
+        name: input.name,
+        type: input.type,
+      })),
+    }));
+
   return calls;
 };
 
@@ -683,18 +732,35 @@ export const getDappAbiEvents = async (
     );
 
     if (response.status === 200) {
-      let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
       const dapp = response.data;
+      let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
+
       for (const contract of dapp.abis) {
-        const dAppContract: IAbiEventsOutputContract = {
-          name: contract.name,
-          address: contract.address,
-          events: extractAbiEvents(contract.abi),
-        };
-        dappEventsOutput.contracts.push(dAppContract);
+        logger.debug(`Contract ABI: ${JSON.stringify(contract.abi)}`);
+        if (isSubstrateAbi(contract.abi)) {
+          const dAppContract: IAbiEventsOutputContract = {
+            name: contract.name,
+            address: contract.address,
+            events: extractInkAbiEvents(contract.abi),
+          };
+          dappEventsOutput.contracts.push(dAppContract);
+        } else if (isEvmAbi(contract.abi)) {
+          const dAppContract: IAbiEventsOutputContract = {
+            name: contract.name,
+            address: contract.address,
+            events: extractEvmAbiEvents(contract.abi),
+          };
+          dappEventsOutput.contracts.push(dAppContract);
+        } else {
+          return res
+            .status(httpStatus.BAD_REQUEST)
+            .json({ message: 'Unsupported ABI format' });
+        }
       }
+
       return res.status(httpStatus.OK).json(dappEventsOutput);
     }
+
     return res.status(response.status).json({
       message: response.data.message || 'No dApps found',
     });
@@ -710,6 +776,44 @@ export const getDappAbiEvents = async (
     });
   }
 };
+
+// export const getDappAbiEvents = async (
+//   req: Request,
+//   res: Response,
+// ): Promise<Response> => {
+//   try {
+//     const response = await axios.get(
+//       `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
+//     );
+
+//     if (response.status === 200) {
+//       let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
+//       const dapp = response.data;
+//       for (const contract of dapp.abis) {
+//         const dAppContract: IAbiEventsOutputContract = {
+//           name: contract.name,
+//           address: contract.address,
+//           events: extractInkAbiEvents(contract.abi),
+//         };
+//         dappEventsOutput.contracts.push(dAppContract);
+//       }
+//       return res.status(httpStatus.OK).json(dappEventsOutput);
+//     }
+//     return res.status(response.status).json({
+//       message: response.data.message || 'No dApps found',
+//     });
+//   } catch (error) {
+//     logger.error('Error retrieving dApps ABIs:', error);
+//     if (error.response) {
+//       return res.status(error.response.status).json({
+//         message: error.response.data.message || 'Error retrieving dApps ABIs',
+//       });
+//     }
+//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//       message: 'Failed to connect to backend service',
+//     });
+//   }
+// };
 
 export const getDappAbiCalls = async (
   req: Request,
@@ -721,19 +825,34 @@ export const getDappAbiCalls = async (
     );
 
     if (response.status === 200) {
-      let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
       const dapp = response.data;
+      let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
 
       for (const contract of dapp.abis) {
-        const dAppContract: IAbiCallsOutputContract = {
-          name: contract.name,
-          address: contract.address,
-          calls: extractAbiFunctions(contract.abi),
-        };
-        dappCallsOutput.contracts.push(dAppContract);
+        if (isSubstrateAbi(contract.abi)) {
+          const dAppContract: IAbiCallsOutputContract = {
+            name: contract.name,
+            address: contract.address,
+            calls: extractInkAbiFunctions(contract.abi),
+          };
+          dappCallsOutput.contracts.push(dAppContract);
+        } else if (isEvmAbi(contract.abi)) {
+          const dAppContract: IAbiCallsOutputContract = {
+            name: contract.name,
+            address: contract.address,
+            calls: extractEvmAbiFunctions(contract.abi),
+          };
+          dappCallsOutput.contracts.push(dAppContract);
+        } else {
+          return res
+            .status(httpStatus.BAD_REQUEST)
+            .json({ message: 'Unsupported ABI format' });
+        }
       }
+
       return res.status(httpStatus.OK).json(dappCallsOutput);
     }
+
     return res.status(response.status).json({
       message: response.data.message || 'No dApps found',
     });
@@ -749,6 +868,45 @@ export const getDappAbiCalls = async (
     });
   }
 };
+
+// export const getDappAbiCalls = async (
+//   req: Request,
+//   res: Response,
+// ): Promise<Response> => {
+//   try {
+//     const response = await axios.get(
+//       `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
+//     );
+
+//     if (response.status === 200) {
+//       let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
+//       const dapp = response.data;
+
+//       for (const contract of dapp.abis) {
+//         const dAppContract: IAbiCallsOutputContract = {
+//           name: contract.name,
+//           address: contract.address,
+//           calls: extractInkAbiFunctions(contract.abi),
+//         };
+//         dappCallsOutput.contracts.push(dAppContract);
+//       }
+//       return res.status(httpStatus.OK).json(dappCallsOutput);
+//     }
+//     return res.status(response.status).json({
+//       message: response.data.message || 'No dApps found',
+//     });
+//   } catch (error) {
+//     logger.error('Error retrieving dApps ABIs:', error);
+//     if (error.response) {
+//       return res.status(error.response.status).json({
+//         message: error.response.data.message || 'Error retrieving dApps ABIs',
+//       });
+//     }
+//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//       message: 'Failed to connect to backend service',
+//     });
+//   }
+// };
 
 export const getDappDataMetrics = async (
   req: Request,
