@@ -11,20 +11,15 @@ const isSubstrateAbi = (abi: any): boolean => {
 };
 
 const isEvmAbi = (abi: any): boolean => {
-  logger.debug(`isEvmAbi abi: ${JSON.stringify(abi)}`);
-  abi.forEach((item) => {
-    logger.debug(`isEvmAbi abi item.type: ${JSON.stringify(item.type)}`);
-  });
-  const isEvmAbi =
+  return (
     abi &&
     Array.isArray(abi) &&
     abi.every((item) =>
       ['function', 'event', 'constructor', 'fallback', 'receive'].includes(
         item.type,
       ),
-    );
-  logger.debug(`isEvmAbi isEvmAbi: ${isEvmAbi}`);
-  return isEvmAbi;
+    )
+  );
 };
 
 export { isSubstrateAbi, isEvmAbi };

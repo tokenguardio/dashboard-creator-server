@@ -9,13 +9,13 @@ const substrateToPostgresTypeMap = {
   i32: 'integer',
   i64: 'integer',
   i128: 'integer',
-  f32: 'float',
-  f64: 'float',
+  f32: 'number',
+  f64: 'number',
   str: 'string',
   bool: 'boolean',
 };
 
-function resolveType(typeId, types) {
+function resolveInkType(typeId, types) {
   const typeDef = types.find((t) => t.id === typeId);
   if (!typeDef) {
     throw new Error(`Type ID ${typeId} not found in ABI.`);
@@ -29,7 +29,7 @@ function resolveType(typeId, types) {
   // Handle other types (e.g., composite, array, sequence, tuple, variant) if needed
   const typeDefArray = typeDef.type.def.array;
   if (typeDefArray) {
-    return resolveType(typeDefArray.type, types); // Simplified: assume the array elements have the same type
+    return resolveInkType(typeDefArray.type, types); // Simplified: assume the array elements have the same type
   }
 
   const typeDefComposite = typeDef.type.def.composite;
@@ -39,7 +39,7 @@ function resolveType(typeId, types) {
 
   const typeDefSequence = typeDef.type.def.sequence;
   if (typeDefSequence) {
-    return resolveType(typeDefSequence.type, types); // Simplified: assume sequence elements have the same type
+    return resolveInkType(typeDefSequence.type, types); // Simplified: assume sequence elements have the same type
   }
 
   const typeDefTuple = typeDef.type.def.tuple;
@@ -55,4 +55,27 @@ function resolveType(typeId, types) {
   return 'string'; // Default type
 }
 
-export { resolveType };
+const evmToPostgresTypeMap = {
+  uint8: 'integer',
+  uint16: 'integer',
+  uint32: 'integer',
+  uint64: 'integer',
+  uint128: 'integer',
+  uint256: 'integer',
+  int8: 'integer',
+  int16: 'integer',
+  int32: 'integer',
+  int64: 'integer',
+  int128: 'integer',
+  int256: 'integer',
+  bool: 'boolean',
+  address: 'string',
+  bytes: 'string',
+  string: 'string',
+};
+
+function resolveEvmType(type) {
+  return evmToPostgresTypeMap[type] || 'string';
+}
+
+export { resolveInkType, resolveEvmType };

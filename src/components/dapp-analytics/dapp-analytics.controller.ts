@@ -18,7 +18,7 @@ import {
   IEvmEventAbiItem,
   IEvmFunctionAbiItem,
 } from './abi.interface';
-import { resolveType } from './substrate-types.mapping';
+import { resolveInkType, resolveEvmType } from './types.mapping';
 import { docker, k8sApi } from 'server';
 import { getCurrentBlock } from '@components/node-api/chainstate';
 import { convertAndFormatNumbers } from './helpers/formatting';
@@ -660,7 +660,7 @@ const extractInkAbiEvents = function (
       name: event.label,
       args: event.args.map((arg: IInkAbiArg) => ({
         name: arg.label,
-        type: resolveType(arg.type.type, contractAbi.types),
+        type: resolveInkType(arg.type.type, contractAbi.types),
       })),
     }),
   );
@@ -676,7 +676,7 @@ const extractEvmAbiEvents = function (
       name: event.name!,
       args: event.inputs!.map((input) => ({
         name: input.name,
-        type: input.type,
+        type: resolveEvmType(input.type),
       })),
     }));
 
@@ -694,7 +694,7 @@ const extractInkAbiFunctions = function (
       selector: message.selector,
       args: message.args.map((arg: IInkAbiArg) => ({
         name: arg.label,
-        type: resolveType(arg.type.type, contractAbi.types),
+        type: resolveInkType(arg.type.type, contractAbi.types),
       })),
     }));
   return calls;
@@ -715,7 +715,7 @@ const extractEvmAbiFunctions = function (
       selector: '0x00000000', // jrojek TODO: calculate selector
       args: func.inputs!.map((input) => ({
         name: input.name,
-        type: input.type,
+        type: resolveEvmType(input.type),
       })),
     }));
 
@@ -736,7 +736,6 @@ export const getDappAbiEvents = async (
       let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
 
       for (const contract of dapp.abis) {
-        logger.debug(`Contract ABI: ${JSON.stringify(contract.abi)}`);
         if (isSubstrateAbi(contract.abi)) {
           const dAppContract: IAbiEventsOutputContract = {
             name: contract.name,
