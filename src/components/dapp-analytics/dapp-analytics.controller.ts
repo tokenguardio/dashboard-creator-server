@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import httpStatus, { OK } from 'http-status';
 import axios from 'axios';
+import { ethers } from 'ethers';
 import logger from '@core/utils/logger';
 import { IDAppData } from './dapp-analytics.interface';
 import {
@@ -710,14 +711,23 @@ const extractEvmAbiFunctions = function (
         item.stateMutability !== 'view' &&
         item.stateMutability !== 'pure',
     )
-    .map((func: IEvmFunctionAbiItem) => ({
-      name: func.name!,
-      selector: '0x00000000', // jrojek TODO: calculate selector
-      args: func.inputs!.map((input) => ({
-        name: input.name,
-        type: resolveEvmType(input.type),
-      })),
-    }));
+    .map((func: IEvmFunctionAbiItem) => {
+      const functionSignature = `${func.name}(${func
+        .inputs!.map((input) => input.type)
+        .join(',')})`;
+      const selector = ethers
+        .keccak256(ethers.toUtf8Bytes(functionSignature))
+        .slice(0, 10);
+      // TODO: jrojek, prevent selector calculation every time the method is called
+      return {
+        name: func.name!,
+        selector: selector,
+        args: func.inputs!.map((input) => ({
+          name: input.name,
+          type: resolveEvmType(input.type),
+        })),
+      };
+    });
 
   return calls;
 };
