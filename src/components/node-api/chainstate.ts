@@ -5,6 +5,7 @@ const rpcEndpoints: { [key: string]: string } = {
   kusama: 'wss://kusama-rpc.polkadot.io',
   'aleph-zero': 'wss://rpc.azero.dev',
   moonbeam: 'wss://moonbeam.api.onfinality.io/public-ws',
+  'arbitrum-one': 'wss://arbitrum-one.public.blastapi.io',
 };
 
 export async function getCurrentBlock(chain: string) {
