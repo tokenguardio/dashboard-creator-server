@@ -656,30 +656,30 @@ const extractInkAbiEvents = function (
   contractAbi: IInkAbi,
 ): IAbiEventsOutputContractEvent[] {
   // Extract events
-  const events: IAbiEventsOutputContractEvent[] = contractAbi.spec.events.map(
-    (event: IInkAbiEvent) => ({
+  const events: IAbiEventsOutputContractEvent[] =
+    contractAbi.spec.events.map((event: IInkAbiEvent) => ({
       name: event.label,
       args: event.args.map((arg: IInkAbiArg) => ({
         name: arg.label,
         type: resolveInkType(arg.type.type, contractAbi.types),
       })),
-    }),
-  );
+    })) || [];
   return events;
 };
 
 const extractEvmAbiEvents = function (
   abi: IEvmAbi,
 ): IAbiEventsOutputContractEvent[] {
-  const events: IAbiEventsOutputContractEvent[] = abi
-    .filter((item) => item.type === 'event')
-    .map((event: IEvmEventAbiItem) => ({
-      name: event.name!,
-      args: event.inputs!.map((input) => ({
-        name: input.name,
-        type: resolveEvmType(input.type),
-      })),
-    }));
+  const events: IAbiEventsOutputContractEvent[] =
+    abi
+      .filter((item) => item.type === 'event')
+      .map((event: IEvmEventAbiItem) => ({
+        name: event.name!,
+        args: event.inputs!.map((input) => ({
+          name: input.name,
+          type: resolveEvmType(input.type),
+        })),
+      })) || [];
 
   return events;
 };
@@ -688,46 +688,48 @@ const extractInkAbiFunctions = function (
   contractAbi: IInkAbi,
 ): IAbiCallsOutputContractCall[] {
   // Extract messages (calls) that mutate the blockchain state
-  const calls: IAbiCallsOutputContractCall[] = contractAbi.spec.messages
-    .filter((message: IInkAbiMessage) => message.mutates)
-    .map((message: IInkAbiMessage) => ({
-      name: message.label,
-      selector: message.selector,
-      args: message.args.map((arg: IInkAbiArg) => ({
-        name: arg.label,
-        type: resolveInkType(arg.type.type, contractAbi.types),
-      })),
-    }));
+  const calls: IAbiCallsOutputContractCall[] =
+    contractAbi.spec.messages
+      .filter((message: IInkAbiMessage) => message.mutates)
+      .map((message: IInkAbiMessage) => ({
+        name: message.label,
+        selector: message.selector,
+        args: message.args.map((arg: IInkAbiArg) => ({
+          name: arg.label,
+          type: resolveInkType(arg.type.type, contractAbi.types),
+        })),
+      })) || [];
   return calls;
 };
 
 const extractEvmAbiFunctions = function (
   abi: IEvmAbi,
 ): IAbiCallsOutputContractCall[] {
-  const calls: IAbiCallsOutputContractCall[] = abi
-    .filter(
-      (item) =>
-        item.type === 'function' &&
-        item.stateMutability !== 'view' &&
-        item.stateMutability !== 'pure',
-    )
-    .map((func: IEvmFunctionAbiItem) => {
-      const functionSignature = `${func.name}(${func
-        .inputs!.map((input) => input.type)
-        .join(',')})`;
-      const selector = ethers
-        .keccak256(ethers.toUtf8Bytes(functionSignature))
-        .slice(0, 10);
-      // TODO: jrojek, prevent selector calculation every time the method is called
-      return {
-        name: func.name!,
-        selector: selector,
-        args: func.inputs!.map((input) => ({
-          name: input.name,
-          type: resolveEvmType(input.type),
-        })),
-      };
-    });
+  const calls: IAbiCallsOutputContractCall[] =
+    abi
+      .filter(
+        (item) =>
+          item.type === 'function' &&
+          item.stateMutability !== 'view' &&
+          item.stateMutability !== 'pure',
+      )
+      .map((func: IEvmFunctionAbiItem) => {
+        const functionSignature = `${func.name}(${func
+          .inputs!.map((input) => input.type)
+          .join(',')})`;
+        const selector = ethers
+          .keccak256(ethers.toUtf8Bytes(functionSignature))
+          .slice(0, 10);
+        // TODO: jrojek, prevent selector calculation every time the method is called
+        return {
+          name: func.name!,
+          selector: selector,
+          args: func.inputs!.map((input) => ({
+            name: input.name,
+            type: resolveEvmType(input.type),
+          })),
+        };
+      }) || [];
 
   return calls;
 };
