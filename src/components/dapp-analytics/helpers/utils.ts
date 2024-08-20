@@ -1,6 +1,3 @@
-import { IInkAbi, IEvmAbi } from '../abi.interface';
-import logger from '@core/utils/logger';
-
 const isSubstrateAbi = (abi: any): boolean => {
   return (
     abi &&
@@ -15,9 +12,14 @@ const isEvmAbi = (abi: any): boolean => {
     abi &&
     Array.isArray(abi) &&
     abi.every((item) =>
-      ['function', 'event', 'constructor', 'fallback', 'receive'].includes(
-        item.type,
-      ),
+      [
+        'function',
+        'event',
+        'constructor',
+        'fallback',
+        'receive',
+        'error',
+      ].includes(item.type),
     )
   );
 };
