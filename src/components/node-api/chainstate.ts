@@ -9,8 +9,8 @@ const rpcEndpoints: { [key: string]: string } = {
   'arbitrum-one': 'https://arb1.arbitrum.io/rpc',
   'arbitrum-nova': 'https://nova.arbitrum.io/rpc',
   optimism: 'https://optimism.api.onfinality.io/public',
-  bifrost: 'wss://bifrost-polkadot.api.onfinality.io/public-ws',
-  hydration: 'wss://hydradx.api.onfinality.io/public-ws',
+  bifrost: 'wss://bifrost-rpc.dwellir.com',
+  hydration: 'wss://hydradx-rpc.dwellir.com',
 };
 
 export async function getCurrentBlock(chain: string): Promise<number> {
