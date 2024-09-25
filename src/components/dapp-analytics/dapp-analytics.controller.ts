@@ -615,6 +615,8 @@ async function checkDockerContainerStatus(dApps) {
 async function checkKubernetesPodStatus(dApps) {
   const namespace = 'dapp-analytics';
   const labelSelector = 'managed-by=dapp-analytics-admin';
+
+  // Fetch pods in the dapp-analytics namespace
   const pods = await k8sApi.listNamespacedPod(
     namespace,
     undefined,
@@ -624,14 +626,36 @@ async function checkKubernetesPodStatus(dApps) {
     labelSelector,
   );
 
+  // Fetch all pods in the subsquid namespace
+  const subsquidPods = await k8sApi.listNamespacedPod('subsquid');
+
+  // Map over dApps to get their statuses
   return dApps.map((dApp) => {
+    // Check for the related pod in dapp-analytics namespace
     const relatedPod = pods.body.items.find(
       (pod) =>
         pod.metadata.labels && pod.metadata.labels['dapp-id'] === dApp.id,
     );
+
+    const relatedSubsquidPod = subsquidPods.body.items.find(
+      (pod) =>
+        pod.metadata.labels &&
+        pod.metadata.labels['app'].startsWith('wasabi') &&
+        pod.metadata.labels['app'].includes(
+          dApp.slug === 'hydration' ? 'hydradx' : dApp.slug,
+        ),
+    );
+
+    // Determine the container status
+    const containerStatus = relatedPod
+      ? relatedPod.status.phase
+      : relatedSubsquidPod
+      ? relatedSubsquidPod.status.phase
+      : 'not found';
+
     return {
       ...dApp,
-      containerStatus: relatedPod ? relatedPod.status.phase : 'not found',
+      containerStatus,
     };
   });
 }
