@@ -14,6 +14,78 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
+    "/api/airflow/check-dag-status/{dagId}": {
+      "get": {
+        "tags": ["Airflow DAG Management"],
+        "summary": "Check the status of a DAG run",
+        "description": "This endpoint retrieves the status of a specific DAG run based on the provided dagId in the path and dagRunId in the query parameters.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "dagId",
+            "in": "path",
+            "description": "The ID of the DAG",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dagRunId",
+            "in": "query",
+            "description": "The ID of the DAG run",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DAG run status retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/DagRunStatusResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid input"
+          },
+          "404": {
+            "description": "Not Found - DAG or DAG run ID not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/airflow/trigger-dag": {
+      "post": {
+        "tags": ["Airflow DAG Management"],
+        "summary": "Trigger an Airflow DAG",
+        "description": "This endpoint triggers a DAG run in Airflow using the specified `dagId`.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "dagRunRequest",
+            "description": "Request body containing the DAG ID and optional configuration.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DagRunRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DAG triggered successfully",
+            "schema": {
+              "$ref": "#/definitions/DagRunResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/dapp-analytics/dapp": {
       "post": {
         "tags": ["DApp Management"],
@@ -848,6 +920,65 @@
     }
   },
   "definitions": {
+    "DagRunStatusResponse": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "description": "The current state of the DAG run",
+          "enum": [
+            "queued",
+            "running",
+            "success",
+            "failed",
+            "up_for_retry",
+            "up_for_reschedule"
+          ]
+        },
+        "execution_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The execution date of the DAG run"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The start date of the DAG run"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The end date of the DAG run"
+        }
+      }
+    },
+    "DagRunRequest": {
+      "type": "object",
+      "required": ["dagId"],
+      "properties": {
+        "dagId": {
+          "type": "string",
+          "description": "The ID of the DAG to trigger"
+        },
+        "conf": {
+          "type": "object",
+          "description": "Optional configuration parameters for the DAG run"
+        }
+      }
+    },
+    "DagRunResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "DAG triggered successfully"
+        },
+        "data": {
+          "type": "object",
+          "description": "Details of the triggered DAG run"
+        }
+      }
+    },
     "DAppData": {
       "type": "object",
       "required": ["name", "blockchain", "abis"],
