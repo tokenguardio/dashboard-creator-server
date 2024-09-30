@@ -14,6 +14,47 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
+    "/api/airflow/check-dag-status/{dagId}": {
+      "get": {
+        "tags": ["Airflow DAG Management"],
+        "summary": "Check the status of a DAG run",
+        "description": "This endpoint retrieves the status of a specific DAG run based on the provided dagId in the path and dagRunId in the query parameters.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "dagId",
+            "in": "path",
+            "description": "The ID of the DAG",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "dagRunId",
+            "in": "query",
+            "description": "The ID of the DAG run",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DAG run status retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/DagRunStatusResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid input"
+          },
+          "404": {
+            "description": "Not Found - DAG or DAG run ID not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/airflow/trigger-dag": {
       "post": {
         "tags": ["Airflow DAG Management"],
@@ -879,6 +920,38 @@
     }
   },
   "definitions": {
+    "DagRunStatusResponse": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "description": "The current state of the DAG run",
+          "enum": [
+            "queued",
+            "running",
+            "success",
+            "failed",
+            "up_for_retry",
+            "up_for_reschedule"
+          ]
+        },
+        "execution_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The execution date of the DAG run"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The start date of the DAG run"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The end date of the DAG run"
+        }
+      }
+    },
     "DagRunRequest": {
       "type": "object",
       "required": ["dagId"],

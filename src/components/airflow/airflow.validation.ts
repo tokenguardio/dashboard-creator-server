@@ -6,3 +6,12 @@ export const triggerDagRunValidation = {
     conf: Joi.object().optional(),
   }),
 };
+
+export const checkDagRunStatusQueryValidation = {
+  params: Joi.object({
+    dagId: Joi.string().required(),
+  }),
+  query: Joi.object({
+    dagRunId: Joi.string().required(),
+  }),
+};
