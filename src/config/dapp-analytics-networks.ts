@@ -5,6 +5,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'substrate',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/aleph-zero',
     rpcIngestionDisabled: 'true',
+    traces: false,
   },
   'arbitrum-one': {
     type: 'evm',
@@ -12,6 +13,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'irrelevant',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/arbitrum-one',
     rpcIngestionDisabled: 'true',
+    traces: true,
   },
   'arbitrum-nova': {
     type: 'evm',
@@ -19,6 +21,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'irrelevant',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/arbitrum-nova',
     rpcIngestionDisabled: 'true',
+    traces: true,
   },
   astar: {
     type: 'substrate',
@@ -26,6 +29,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'astar',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/astar-substrate',
     rpcIngestionDisabled: 'true',
+    traces: false,
   },
   avalanche: {
     type: 'evm',
@@ -33,6 +37,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'irrelevant',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/avalanche-mainnet',
     rpcIngestionDisabled: 'true',
+    traces: true,
   },
   moonbeam: {
     type: 'evm',
@@ -40,6 +45,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'irrelevant',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/moonbeam-mainnet',
     rpcIngestionDisabled: 'true',
+    traces: true,
   },
   optimism: {
     type: 'evm',
@@ -47,6 +53,7 @@ const DAPP_ANALYTICS_NETWORKS = {
     ss58Network: 'irrelevant',
     gatewayUrl: 'https://v2.archive.subsquid.io/network/optimism-mainnet',
     rpcIngestionDisabled: 'true',
+    traces: true,
   },
 };
 
