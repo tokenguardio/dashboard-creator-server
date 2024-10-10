@@ -259,6 +259,7 @@ export const startDappIndexerPod = async (
               name: 'DAPP_ADDRESSES',
               value: dappData.abis.map((abi) => abi.address).join(','),
             },
+            { name: 'TRACES', value: networkConfig.traces.toString() },
           ],
         },
       ],
