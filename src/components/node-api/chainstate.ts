@@ -2,15 +2,20 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ethers } from 'ethers';
 
 const rpcEndpoints: { [key: string]: string } = {
-  polkadot: 'wss://rpc.polkadot.io',
-  kusama: 'wss://kusama-rpc.polkadot.io',
-  'aleph-zero': 'wss://rpc.azero.dev',
-  moonbeam: 'wss://moonbeam.api.onfinality.io/public-ws',
-  'arbitrum-one': 'https://arb1.arbitrum.io/rpc',
-  'arbitrum-nova': 'https://nova.arbitrum.io/rpc',
-  optimism: 'https://optimism.api.onfinality.io/public',
-  bifrost: 'wss://bifrost-rpc.dwellir.com',
-  hydration: 'wss://hydradx-rpc.dwellir.com',
+  polkadot: process.env.WSS_POLKADOT || 'wss://rpc.polkadot.io',
+  kusama: process.env.WSS_KUSAMA || 'wss://kusama-rpc.polkadot.io',
+  'aleph-zero': process.env.WSS_ALEPH_ZERO || 'wss://rpc.azero.dev',
+  moonbeam:
+    process.env.WSS_MOONBEAM || 'wss://moonbeam.api.onfinality.io/public-ws',
+  'arbitrum-one':
+    process.env.RPC_ARBITRUM_ONE || 'https://arb1.arbitrum.io/rpc',
+  'arbitrum-nova':
+    process.env.RPC_ARBITRUM_NOVA || 'https://nova.arbitrum.io/rpc',
+  ethereum: process.env.RPC_ETHEREUM || 'https://eth.api.onfinality.io/public',
+  optimism:
+    process.env.RPC_OPTIMISM || 'https://optimism.api.onfinality.io/public',
+  bifrost: process.env.WSS_BIFROST || 'wss://bifrost-rpc.dwellir.com',
+  hydration: process.env.WSS_HYDRATION || 'wss://hydradx-rpc.dwellir.com',
 };
 
 export async function getCurrentBlock(chain: string): Promise<number> {
