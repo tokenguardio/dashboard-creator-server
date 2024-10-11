@@ -477,6 +477,8 @@ export async function fetchDappById(id) {
     const response = await axios.get(
       `${API_BASE_URL}/dapp-analytics/dapp/${id}`,
     );
+    logger.info(response.data);
+    // const blockchainData = await
     if (response.status === 200) {
       return { data: response.data, error: null };
     }
