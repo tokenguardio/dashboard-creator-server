@@ -34,7 +34,7 @@ export const saveDapp = async (
   res: Response,
 ): Promise<Response> => {
   try {
-    const { name, logo, blockchain, website, fromBlock, addedBy, abis } =
+    const { name, logo, blockchain, website, fromBlock, addedBy, abis, airdropContract, airdropCurrencyContract } =
       req.body as IDAppData;
     const response = await axios.post(`${API_BASE_URL}/dapp-analytics/dapp`, {
       name,
@@ -44,6 +44,8 @@ export const saveDapp = async (
       fromBlock,
       addedBy,
       abis,
+      airdropContract,
+      airdropCurrencyContract,
     });
     logger.info('Response:', response.status, response.data);
     if (response.status === 201) {

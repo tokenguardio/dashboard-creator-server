@@ -11,6 +11,7 @@ const rpcEndpoints: { [key: string]: string } = {
     process.env.RPC_ARBITRUM_ONE || 'https://arb1.arbitrum.io/rpc',
   'arbitrum-nova':
     process.env.RPC_ARBITRUM_NOVA || 'https://nova.arbitrum.io/rpc',
+  avalanche: process.env.RPC_AVALANCHE || 'https://avalanche.api.onfinality.io/public/ext/bc/C/rpc',
   ethereum: process.env.RPC_ETHEREUM || 'https://eth.api.onfinality.io/public',
   optimism:
     process.env.RPC_OPTIMISM || 'https://optimism.api.onfinality.io/public',
