@@ -11,7 +11,9 @@ const rpcEndpoints: { [key: string]: string } = {
     process.env.RPC_ARBITRUM_ONE || 'https://arb1.arbitrum.io/rpc',
   'arbitrum-nova':
     process.env.RPC_ARBITRUM_NOVA || 'https://nova.arbitrum.io/rpc',
-  avalanche: process.env.RPC_AVALANCHE || 'https://avalanche.api.onfinality.io/public/ext/bc/C/rpc',
+  avalanche:
+    process.env.RPC_AVALANCHE ||
+    'https://avalanche.api.onfinality.io/public/ext/bc/C/rpc',
   ethereum: process.env.RPC_ETHEREUM || 'https://eth.api.onfinality.io/public',
   optimism:
     process.env.RPC_OPTIMISM || 'https://optimism.api.onfinality.io/public',
@@ -19,11 +21,27 @@ const rpcEndpoints: { [key: string]: string } = {
   hydration: process.env.WSS_HYDRATION || 'wss://hydradx-rpc.dwellir.com',
 };
 
+// Cache storage for block numbers and timestamps
+const blockCache: {
+  [key: string]: { blockNumber: number; timestamp: number };
+} = {};
+const CACHE_EXPIRY_HOURS = Number(process.env.CACHE_EXPIRY_HOURS) || 12; // Default to 12 hours if not set
+const CACHE_EXPIRY = CACHE_EXPIRY_HOURS * 60 * 60 * 1000; // Convert hours to milliseconds
+
 export async function getCurrentBlock(chain: string): Promise<number> {
   const endpoint = rpcEndpoints[chain];
   if (!endpoint) {
     throw new Error(`RPC endpoint for chain ${chain} not found`);
   }
+
+  // Check if cache is valid
+  const cached = blockCache[chain];
+  const now = Date.now();
+  if (cached && now - cached.timestamp < CACHE_EXPIRY) {
+    return cached.blockNumber;
+  }
+
+  let currentBlockNumber: number;
 
   if (
     [
@@ -39,13 +57,18 @@ export async function getCurrentBlock(chain: string): Promise<number> {
     const wsProvider = new WsProvider(endpoint);
     const api = await ApiPromise.create({ provider: wsProvider });
     const currentBlock = await api.rpc.chain.getHeader();
-    return currentBlock.number.toNumber();
+    currentBlockNumber = currentBlock.number.toNumber();
+    api.disconnect();
   } else if (['arbitrum-one', 'arbitrum-nova', 'optimism'].includes(chain)) {
     // Ethereum-compatible chains (e.g., Arbitrum)
     const provider = new ethers.JsonRpcProvider(endpoint);
-    const currentBlockNumber = await provider.getBlockNumber();
-    return currentBlockNumber;
+    currentBlockNumber = await provider.getBlockNumber();
   } else {
     throw new Error(`Chain ${chain} is not supported`);
   }
+
+  // Update cache
+  blockCache[chain] = { blockNumber: currentBlockNumber, timestamp: now };
+
+  return currentBlockNumber;
 }
