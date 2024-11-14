@@ -528,6 +528,7 @@ export const getAllDapps = async (req, res) => {
       });
     }
     const dApps = response.data;
+    logger.info(`dApps response from dbapi: ${JSON.stringify(dApps)}`);
     if (req.query.simplified) {
       return res.status(200).json(dApps);
     }
@@ -817,44 +818,6 @@ export const getDappAbiEvents = async (
   }
 };
 
-// export const getDappAbiEvents = async (
-//   req: Request,
-//   res: Response,
-// ): Promise<Response> => {
-//   try {
-//     const response = await axios.get(
-//       `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
-//     );
-
-//     if (response.status === 200) {
-//       let dappEventsOutput: IAbiEventsOutput = { contracts: [] };
-//       const dapp = response.data;
-//       for (const contract of dapp.abis) {
-//         const dAppContract: IAbiEventsOutputContract = {
-//           name: contract.name,
-//           address: contract.address,
-//           events: extractInkAbiEvents(contract.abi),
-//         };
-//         dappEventsOutput.contracts.push(dAppContract);
-//       }
-//       return res.status(httpStatus.OK).json(dappEventsOutput);
-//     }
-//     return res.status(response.status).json({
-//       message: response.data.message || 'No dApps found',
-//     });
-//   } catch (error) {
-//     logger.error('Error retrieving dApps ABIs:', error);
-//     if (error.response) {
-//       return res.status(error.response.status).json({
-//         message: error.response.data.message || 'Error retrieving dApps ABIs',
-//       });
-//     }
-//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-//       message: 'Failed to connect to backend service',
-//     });
-//   }
-// };
-
 export const getDappAbiCalls = async (
   req: Request,
   res: Response,
@@ -908,45 +871,6 @@ export const getDappAbiCalls = async (
     });
   }
 };
-
-// export const getDappAbiCalls = async (
-//   req: Request,
-//   res: Response,
-// ): Promise<Response> => {
-//   try {
-//     const response = await axios.get(
-//       `${API_BASE_URL}/dapp-analytics/dapp/${req.params.id}`,
-//     );
-
-//     if (response.status === 200) {
-//       let dappCallsOutput: IAbiCallsOutput = { contracts: [] };
-//       const dapp = response.data;
-
-//       for (const contract of dapp.abis) {
-//         const dAppContract: IAbiCallsOutputContract = {
-//           name: contract.name,
-//           address: contract.address,
-//           calls: extractInkAbiFunctions(contract.abi),
-//         };
-//         dappCallsOutput.contracts.push(dAppContract);
-//       }
-//       return res.status(httpStatus.OK).json(dappCallsOutput);
-//     }
-//     return res.status(response.status).json({
-//       message: response.data.message || 'No dApps found',
-//     });
-//   } catch (error) {
-//     logger.error('Error retrieving dApps ABIs:', error);
-//     if (error.response) {
-//       return res.status(error.response.status).json({
-//         message: error.response.data.message || 'Error retrieving dApps ABIs',
-//       });
-//     }
-//     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-//       message: 'Failed to connect to backend service',
-//     });
-//   }
-// };
 
 export const getDappDataMetrics = async (
   req: Request,
