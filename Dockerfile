@@ -6,7 +6,7 @@ RUN mkdir -p /usr/src/node-app && chown -R node:node /usr/src/node-app
 WORKDIR /usr/src/node-app
 USER node
 
-COPY --chown=node:node package.json ./
+COPY --chown=node:node package.json package-lock.json ./
 
 RUN npm install --prefer-dedupe
 COPY --chown=node:node . .
