@@ -197,6 +197,6 @@ export const dappDataMetricsValidation = {
         ),
       }),
     ),
-    segmentId: Joi.number(),
+    segmentId: Joi.string(),
   }),
 };
