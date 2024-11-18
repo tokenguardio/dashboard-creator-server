@@ -2,7 +2,7 @@ export interface IDashboardElement {
   _id: string;
   id: string;
   title: string;
-  type: 'button' | 'text' | 'basicQuery' | 'customQuery' | 'dappAnalytics';
+  type: 'button' | 'text' | 'basicQuery' | 'customQuery' | 'dappAnalytics' | 'userFlow';
 }
 
 export interface IDashboardElementText extends IDashboardElement {
@@ -49,8 +49,12 @@ export interface IDashboardElementCustomQuery extends IDashboardElementVis {
   queryId: number;
 }
 
-//********************* dapp analytics *********************//
+export interface IDashboardElementUserFlow extends IDashboardElement {
+  type: 'userFlow';
+  segmentId: string;
+}
 
+//********************* dapp analytics *********************//
 export interface IDashboardElementDappAnalyticsFilterCondition {
   operator: '>' | '<' | '>=' | '<=' | '=' | '!=';
   value: number | string | boolean;
@@ -73,5 +77,6 @@ export interface IDashboardElementDappAnalytics extends IDashboardElementVis {
   dappId: string;
   metric: 'wallets' | 'transferredTokens' | 'interactions';
   breakdown: boolean;
+  segmentId?: string;
   filters: IDashboardElementDappAnalyticsFilter[];
 }

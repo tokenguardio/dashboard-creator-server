@@ -5,8 +5,10 @@ import {
   IDashboardElementText,
   IDashboardElementBasicQuery,
   IDashboardElementCustomQuery,
+  IDashboardElementUserFlow,
   IDashboardElementDappAnalytics,
 } from './dashboardElement.interface';
+import { required } from 'joi';
 
 const dashboardElementSchema = new mongoose.Schema<IDashboardElement>(
   {
@@ -49,6 +51,11 @@ const dashboardElementCustomQuerySchema =
     visType: { type: String, required: true },
   });
 
+const dashboardElementUserFlowSchema =
+  new mongoose.Schema<IDashboardElementUserFlow>({
+    segmentId: { type: String, required: true },
+  });
+
 const dashboardElementDappAnalyticsSchema =
   new mongoose.Schema<IDashboardElementDappAnalytics>({
     dappId: { type: String, required: true },
@@ -58,6 +65,7 @@ const dashboardElementDappAnalyticsSchema =
       required: true,
     },
     breakdown: { type: Boolean, default: false },
+    segmentId: { type: String, required: false },
     filters: [
       {
         name: { type: String, required: true },
@@ -112,6 +120,11 @@ const DashboardElementCustomQueryModel =
     'customQuery',
     dashboardElementCustomQuerySchema,
   );
+const DashboardElementUserFlowModel =
+  DashboardElementModel.discriminator<IDashboardElementUserFlow>(
+    'userFlow',
+    dashboardElementUserFlowSchema,
+  );
 const DashboardElementDappAnalyticsModel =
   DashboardElementModel.discriminator<IDashboardElementDappAnalytics>(
     'dappAnalytics',
@@ -124,5 +137,6 @@ export {
   DashboardElementTextModel,
   DashboardElementBasicQueryModel,
   DashboardElementCustomQueryModel,
+  DashboardElementUserFlowModel,
   DashboardElementDappAnalyticsModel,
 };

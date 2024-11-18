@@ -7,6 +7,7 @@ import {
   DashboardElementTextModel,
   DashboardElementBasicQueryModel,
   DashboardElementCustomQueryModel,
+  DashboardElementUserFlowModel,
   DashboardElementDappAnalyticsModel,
 } from './dashboardElement.model';
 import {
@@ -15,6 +16,7 @@ import {
   IDashboardElementButton,
   IDashboardElementBasicQuery,
   IDashboardElementCustomQuery,
+  IDashboardElementUserFlow,
   IDashboardElementDappAnalytics,
 } from './dashboardElement.interface';
 
@@ -43,6 +45,11 @@ const createDashboardElement = async (
       case 'customQuery':
         newElement = await DashboardElementCustomQueryModel.create(
           elementData as IDashboardElementCustomQuery,
+        );
+        break;
+      case 'userFlow':
+        newElement = await DashboardElementUserFlowModel.create(
+          elementData as IDashboardElementUserFlow,
         );
         break;
       case 'dappAnalytics':
@@ -87,6 +94,8 @@ const getDashboardElement = async (
       return element as IDashboardElementBasicQuery;
     case 'customQuery':
       return element as IDashboardElementCustomQuery;
+    case 'userFlow':
+      return element as IDashboardElementUserFlow;
     case 'dappAnalytics':
       return element as IDashboardElementDappAnalytics;
     default:
@@ -140,6 +149,13 @@ const updateDashboardElement = async (
         await DashboardElementCustomQueryModel.findByIdAndUpdate(
           elementId,
           elementData as IDashboardElementCustomQuery,
+          { new: true },
+        );
+        break;
+      case 'userFlow':
+        await DashboardElementUserFlowModel.findByIdAndUpdate(
+          elementId,
+          elementData as IDashboardElementUserFlow,
           { new: true },
         );
         break;
