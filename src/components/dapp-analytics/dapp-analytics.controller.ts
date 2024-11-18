@@ -34,8 +34,17 @@ export const saveDapp = async (
   res: Response,
 ): Promise<Response> => {
   try {
-    const { name, logo, blockchain, website, fromBlock, addedBy, abis, airdropContract, airdropCurrencyContract } =
-      req.body as IDAppData;
+    const {
+      name,
+      logo,
+      blockchain,
+      website,
+      fromBlock,
+      addedBy,
+      abis,
+      airdropContract,
+      airdropCurrencyContract,
+    } = req.body as IDAppData;
     const response = await axios.post(`${API_BASE_URL}/dapp-analytics/dapp`, {
       name,
       logo,
@@ -113,6 +122,16 @@ export const startDappIndexerDocker = async (
       }
     } catch (error) {
       if (error.statusCode === 404) {
+        await docker.pull(image, (err, stream) => {
+          if (err) {
+            throw err;
+          }
+          return new Promise((resolve, reject) => {
+            docker.modem.followProgress(stream, (err, res) =>
+              err ? reject(err) : resolve(res),
+            );
+          });
+        });
         const containerOptions = {
           Image: image,
           name: containerName,
@@ -242,6 +261,7 @@ export const startDappIndexerPod = async (
         {
           name: podName,
           image: image,
+          imagePullPolicy: 'Always',
           env: [
             { name: 'DAPP_ID', value: id.toString() },
             { name: 'DB_HOST', value: config.indexerDbHost },

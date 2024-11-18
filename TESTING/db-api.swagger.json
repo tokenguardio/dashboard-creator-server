@@ -11,7 +11,7 @@
       "description": "Localhost development server"
     },
     {
-      "url": "https://db-api.dev.tokenguard.io",
+      "url": "https://db-api.dev.patterns.build",
       "description": "Dev environment server"
     }
   ],
