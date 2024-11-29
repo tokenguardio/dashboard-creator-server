@@ -104,6 +104,8 @@ export const saveDappValidation = {
     fromBlock: Joi.number().integer().allow(null),
     addedBy: Joi.string().allow(null),
     abis: abiSchema.required(),
+    airdropContract: Joi.string().optional(),
+    airdropCurrencyContract: Joi.string().optional(),
   }),
 };
 
@@ -195,5 +197,6 @@ export const dappDataMetricsValidation = {
         ),
       }),
     ),
+    segmentId: Joi.string(),
   }),
 };

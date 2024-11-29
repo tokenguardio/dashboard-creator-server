@@ -2,7 +2,7 @@
 
 #### [Tokenguard](https://tokenguard.io) Dashboard Builder - Server
 
-Welcome to the [Tokenguard](https://app.tokenguard.io) Dashboard Builder Server repository! This repository contains the backend implementation of our dashboard builder tool for data analytics. The server-side application provides APIs for connecting frontend visualizations with underlying data, saving and modifying visualization-related data, and managing user dashboards. This tool is under constant development and its initial version was delivered thanks to Web3 Foundation [grant](https://grants.web3.foundation/applications/Tokenguard)  
+Welcome to the [Tokenguard](https://app.patterns.build) Dashboard Builder Server repository! This repository contains the backend implementation of our dashboard builder tool for data analytics. The server-side application provides APIs for connecting frontend visualizations with underlying data, saving and modifying visualization-related data, and managing user dashboards. This tool is under constant development and its initial version was delivered thanks to Web3 Foundation [grant](https://grants.web3.foundation/applications/Tokenguard)  
 This repository is part of the whole project with its corresponding frontend service available at [dashboard-creator-client](https://github.com/tokenguardio/dashboard-creator-client/tree/v2.0.3)
 
 ### Features
@@ -53,7 +53,7 @@ Time:        17.633 s
 
 ### Integration tests
 
-To see full application with all its features visit [demo app](https://demo-dc-app.tokenguard.io/). To roll out your own demo app with all its features, please follow instructions in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.6/TESTING) section.
+To see full application with all its features visit [demo app](https://demo-dc-app.patterns.build/). To roll out your own demo app with all its features, please follow instructions in [TESTING](https://github.com/tokenguardio/dashboard-creator-server/tree/v2.0.6/TESTING) section.
 
 ### Tech Stack
 

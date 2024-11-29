@@ -18,8 +18,11 @@ export const triggerDagRun = async (
       password: AIRFLOW_PASSWORD,
     };
 
+    const url = `${AIRFLOW_URL}/dags/${dagId}/dagRuns`;
+    logger.info(`Triggering DAG ${dagId} with conf: ${JSON.stringify(conf)} on url: ${url}`);
+
     const response = await axios.post(
-      `${AIRFLOW_URL}/dags/${dagId}/dagRuns`,
+      url,
       { conf },
       { auth },
     );

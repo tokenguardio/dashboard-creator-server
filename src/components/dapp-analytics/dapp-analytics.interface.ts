@@ -6,4 +6,6 @@ export interface IDAppData {
   fromBlock: number;
   addedBy: string;
   abis: any;
+  airdropContract?: string;
+  airdropCurrencyContract?: string;
 }
